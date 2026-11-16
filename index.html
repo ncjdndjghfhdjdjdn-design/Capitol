@@ -21040,7 +21040,7 @@ function mpOpen(gid){ MPC.unsub.forEach(u => { try{ u(); }catch(e){} }); MPC.uns
   MPC.unsub.push(MPC.db.collection('mp/' + gid + '/p').onSnapshot(s => { MPC.ps = {}; s.docs.forEach(d => MPC.ps[d.id] = Object.assign({ uid:d.id }, d.data())); if(UI.screen === 'mp' || UI.screen === 'mpw') render(); else if(MPC.playing && UI.tab === 'mp') render(); else mpBar(); if(MPC.game && mpAllReady(MPC.game, MPC.ps)) setTimeout(() => mpTryProcess(false), 300 + Math.random()*1500); }, e => {}));
   MPC.unsub.push(MPC.db.collection('mp/' + gid + '/chat').orderBy('t', 'desc').limit(60).onSnapshot(s => { MPC.chat = s.docs.map(d => d.data()).reverse(); mpChatDraw(); }, e => {})); }
 function mpOnGame(prev, g){ if(g.status === 'live' && MPC.ps[MPC.uid] && ((MPC.autoEnter && g.ver !== MPC.loadedVer) || (prev && prev.status !== 'live'))){ MPC.autoEnter = false; mpLoadWorld(); return; } if(g.status === 'live'){ if(MPC.playing && MPC.loadedVer !== g.ver){ MPC.playing = false; UI.screen = 'mpw'; G = null; toast('A new month begins.', ''); mpLoadWorld(); return; } if(!MPC.playing && (UI.screen === 'mp' || UI.screen === 'mpw')) UI.screen = 'mpw'; }
-  if(g.nuke && !g.nuke.closed && (!prev || !prev.nuke || prev.nuke.id !== g.nuke.id)){ mpAlarm('☢ The President has opened the nuclear briefcase. Members of Congress can vote to impeach on the Multiplayer tab.'); }
+  if(g.nuke && !g.nuke.closed && (!prev || !prev.nuke || prev.nuke.id !== g.nuke.id)){ mpAlarm('☢ The President has opened the nuclear briefcase. The House votes on impeachment now: go to the Impeachment page.'); }
   if(UI.screen === 'mp' || UI.screen === 'mpw' || (MPC.playing && UI.tab === 'mp')) render(); else mpBar(); }
 function mpAlarm(t){ let a = document.getElementById('mpalarm'); if(!a){ a = document.createElement('div'); a.id = 'mpalarm'; document.body.appendChild(a); } a.innerHTML = '<b>' + esc(t) + '</b> <button style="background:#fff;color:#7f1d1d;border:0;border-radius:8px;padding:4px 12px;font-weight:700;cursor:pointer" onclick="this.parentNode.remove()">OK</button>'; }
 async function mpCreate(){ const F = MPC.cf || {}; const id = 'g' + Date.now().toString(36) + Math.floor(Math.random()*1e6).toString(36); await mpRef(id).set({ name:(F.name || 'Capitol game').slice(0, 40), host:MPC.uid, created:Date.now(), status:'lobby', y:+F.y || 2028, max:Math.min(MPMAX, +F.max || 12), ver:0, n:0, round:0, pst:0, nom:{}, runoff:{}, order:[], turn:null, sum:[], log:[], seed:Math.floor(Math.random()*2e9) + 1 }); mpOpen(id); UI.screen = 'mp'; }
@@ -21755,7 +21755,7 @@ function lrResolve(r, evs){ const L = lrEnsure(); const k = r.k; const ttl = lrT
     let win = S[0][1]*2 > tot ? S[0][0] : null; if(!win && S.length <= 2) win = S[0][1] === (S[1] || [0, -1])[1] ? 'AI' : S[0][0];
     if(!win){ const drop = S[S.length - 1][0]; if(drop !== 'AI'){ r.c = r.c.filter(u => u !== drop); } else { r.c = r.c.slice(); r.noAI = true; } Object.keys(r.v).forEach(u => { if(r.v[u] === drop) delete r.v[u]; }); r.ballot++; r.t = G.turn; evs.push('🗳 No majority for ' + ttl + ' among ' + tag + ' (' + S.map(([c, n]) => lrCandName(r, c) + ' ' + n).join(', ') + '). ' + lrCandName(r, drop) + ' drops out; they vote again next month.'); lrHist(r.last); return; }
     lrHist(tag + ' · ' + ttl + ' · ' + r.last);
-    if(r.post === 'speaker'){ r.nom = win; r.st = 'floor'; r.ballot = 1; r.t = G.turn; r.fv = {}; evs.push('🗳 ' + tag + ' nominate ' + lrCandName(r, win) + ' for Speaker (' + S.map(([c, n]) => lrCandName(r, c) + ' ' + n).join(', ') + '). The whole House votes next month.'); return; }
+    if(r.post === 'speaker'){ r.nom = win; r.st = 'floor'; r.ballot = 1; r.t = G.turn; r.fv = {}; evs.push('🗳 ' + tag + ' nominate ' + lrCandName(r, win) + ' for Speaker (' + S.map(([c, n]) => lrCandName(r, c) + ' ' + n).join(', ') + '). ' + (G.m === 12 ? 'The whole House votes on opening day.' : 'The whole House votes next month.')); return; }
     delete L.r[k]; lrSeat(r.ch, r.post, win === 'AI' ? r.ai : G.mp.pl[win].player.mid, evs); return; }
   if(r.st === 'floor'){ if(r.nom !== 'AI' && !(G.mp.pl[r.nom] && lrMemB(G.mp.pl[r.nom]))) r.nom = 'AI'; const F = lrFloor(r); const nmN = lrNm(F.nomId); r.last = 'Floor ballot ' + r.ballot + ': ' + nmN + ' ' + F.a + ', ' + lrNm(F.minId) + ' ' + F.b + (F.o ? ', others ' + F.o : '') + (F.pr ? ', present ' + F.pr : ''); lrHist(r.last);
     if(F.won){ delete L.r[k]; evs.push('🔨 On ballot ' + r.ballot + ', the House elects ' + nmN + ' Speaker, ' + F.a + '–' + F.b + (F.o ? ' (' + F.o + ' for others)' : '') + '.'); lrSeat('H', 'speaker', F.nomId, evs); return; }
@@ -22045,11 +22045,12 @@ function blCards(){ const B = G.mp.pl[G.mp.active]; if(!B) return []; const out 
 /* small native cards replacing "The other players" */
 function blOthers(){ return Object.values(G.mp.pl).filter(o => o.uid !== G.mp.active); }
 function blMailCard(){ const O = blOthers(); if(!O.length) return ''; const q = MPC.acts; const sent = q.filter(a => a.t === 'letter').length;
-  return '<div class="card"><h3>Write to a colleague</h3><p class="muted sm">Your letter arrives in their Correspondence as official mail when the month ends.' + (sent ? ' ' + sent + ' letter' + (sent > 1 ? 's' : '') + ' waiting to go out.' : '') + '</p><div class="row" style="gap:6px;flex-wrap:wrap"><select id="bl-to" class="cc-sel" style="max-width:320px">' + O.map(o => '<option value="' + o.uid + '">' + esc(o.name + ' · ' + mpOffice(o)) + '</option>').join('') + '</select><input id="mplt-s" class="cc-sel" placeholder="Subject" maxlength="80" style="max-width:320px"></div><textarea id="mplt-b" class="cc-sel" rows="5" maxlength="3000" placeholder="Dear colleague, …" style="width:100%;margin-top:6px"></textarea><div class="row" style="margin-top:6px"><button class="btn sm pri" data-blk="letter">Send letter</button></div></div>'; }
+  return '<details class="card bl-write"' + (MPC.blOpen ? ' open' : '') + '><summary><b>✉️ Write to a colleague</b> <span class="muted sm">· another player at your table</span></summary><p class="muted sm">Your letter arrives in their Correspondence as official mail when the month ends.' + (sent ? ' ' + sent + ' letter' + (sent > 1 ? 's' : '') + ' waiting to go out.' : '') + '</p><div class="row" style="gap:6px;flex-wrap:wrap"><select id="bl-to" class="cc-sel" style="max-width:320px">' + O.map(o => '<option value="' + o.uid + '">' + esc(o.name + ' · ' + mpOffice(o)) + '</option>').join('') + '</select><input id="mplt-s" class="cc-sel" placeholder="Subject" maxlength="80" style="max-width:320px"></div><textarea id="mplt-b" class="cc-sel" rows="5" maxlength="3000" placeholder="Dear colleague, …" style="width:100%;margin-top:6px"></textarea><div class="row" style="margin-top:6px"><button class="btn sm pri" data-blk="letter">Send letter</button></div></details>'; }
 function blMediaCard(){ const O = blOthers(); if(!O.length) return ''; const q = MPC.acts; const did = (t, u) => q.some(a => a.t === t && a.uid === u);
   return '<div class="card"><h3>Your colleagues</h3><p class="muted sm">Go after a colleague in public or give them a boost. Everyone at the table sees it.</p>' + O.map(o => '<div class="docpick"><span class="sm">' + mpAv({ name:o.name, party:o.side, body:mpBody(o) }, 22) + ' <b>' + esc(o.name) + '</b> · ' + esc(mpOffice(o)) + '</span><span class="row" style="gap:4px"><button class="btn sm' + (did('call', o.uid) ? ' pri' : '') + '" data-blk="call|' + o.uid + '">Call out</button><button class="btn sm' + (did('praise', o.uid) ? ' pri' : '') + '" data-blk="praise|' + o.uid + '">Praise</button></span></div>').join('') + '</div>'; }
 function blCampCard(){ const O = blOthers(); if(!O.length) return ''; const q = MPC.acts; const did = (t, u) => q.some(a => a.t === t && a.uid === u);
   return '<div class="card"><h3>Endorsements and contributions</h3>' + O.map(o => '<div class="docpick"><span class="sm"><b>' + esc(o.name) + '</b> · ' + esc(mpOffice(o)) + (o.race ? ' · running for ' + esc(mpRaceName(o.race)) : '') + '</span><span class="row" style="gap:4px"><button class="btn sm' + (did('endorse', o.uid) ? ' pri' : '') + '" data-blk="endorse|' + o.uid + '">Endorse</button><button class="btn sm" data-blk="give|' + o.uid + '">Give $50K</button></span></div>').join('') + '</div>'; }
+document.addEventListener('toggle', e => { if(e.target && e.target.classList && e.target.classList.contains('bl-write')) MPC.blOpen = e.target.open; }, true);
 document.addEventListener('click', e => { if(!e.target.closest) return; const el = e.target.closest('[data-blk]'); if(!el) return; e.stopPropagation(); e.preventDefault(); const [a, u] = el.dataset.blk.split('|');
   if(a === 'letter'){ const to = (document.getElementById('bl-to') || {}).value; const s_ = (document.getElementById('mplt-s') || {}).value || ''; const b_ = (document.getElementById('mplt-b') || {}).value || ''; if(!to || !b_.trim()){ toast('Write something first.', 'bad'); return; } mpAct({ t:'letter', to, subj:s_.trim() || 'A letter', body:b_.trim() }); return; }
   if(a === 'give'){ mpAct({ t:'give', uid:u, amt:50e3 }); return; }
@@ -22059,7 +22060,7 @@ viewDash = (function(f){ return function(){ if(G && G.mp && MPC.playing && UI.ta
 shell = (function(f){ return function(h){ if(!(G && G.mp && MPC.playing && !MPC.proc) || UI.screen !== 'game') return f.apply(this, arguments); h = blInject(h); return f.call(this, h); }; })(shell);
 function blInject(h){
   try{ const tab = UI.tab; let add = blCards().filter(x => x[0] === tab).map(x => x[1]).join(''); if(tab === 'mail') add = blMailCard() + add; if(tab === 'media') add += blMediaCard(); if(tab === 'campaign') add += blCampCard(); if(!add) return h;
-    const box = '<div class="mpblend">' + add + '</div>'; const i = h.indexOf('</h2>'); if(i < 0) return box + h; let k = i + 5; const m_ = h.slice(k).match(/^\s*<p class="lead"[^>]*>[\s\S]*?<\/p>/); if(m_) k += m_[0].length; return h.slice(0, k) + box + h.slice(k); }catch(e){ console.error(e); return h; } }
+    return blAt(h, '<div class="mpblend">' + add + '</div>'); }catch(e){ console.error(e); return h; } }
 work108 = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(r && r[1] && r[1].includes('mp')) return [r[0], r[1].filter(k => k !== 'mp')]; }catch(e){} return r; }; })(work108);
 (function(){ const i = TABS.findIndex(t => t[0] === 'mp'); if(i >= 0) TABS.splice(i, 1); })();
 /* buttons that queue multiplayer moves are never replayed as clicks */
@@ -22070,13 +22071,16 @@ actDeclare = (function(f){ return function(){ const r = f.apply(this, arguments)
 actVacate = (function(f){ return function(){ const r = f.apply(this, arguments); if(G && G.mp && r && r.msg) r.msg = 'In multiplayer, move to vacate the chair from the Congressional leadership card on this page.'; return r; }; })(actVacate);
 (function(){ const s = document.createElement('style'); s.textContent = `
 [data-mp^="ldr|"]{display:none!important}
-.mpblend{margin:0 0 14px}.mpblend .card{margin-bottom:12px;border-left:1px solid var(--line,#e5e1d8)!important}
+.mpblend{margin:0 0 14px}.bl-write summary{cursor:pointer;list-style:none;padding:2px 0}.bl-write summary::-webkit-details-marker{display:none}.bl-write[open] summary{margin-bottom:8px}.mpblend .card{margin-bottom:12px;border-left:1px solid var(--line,#e5e1d8)!important}
 .mpblend .lr-card,.mpblend .x2-card{border-left:1px solid var(--line,#e5e1d8)!important}
 `; document.head.appendChild(s); })();
 /* “Enter the game” from the Multiplayer room: when this month's world is already loaded, just go back in */
 mpLoadWorld = (function(f){ return async function(){ try{ const g = MPC.game; if(g && g.status === 'live' && G && G.mp && MPC.loadedVer === g.ver && G.mp.pl[MPC.uid]){ MPC.playing = true; UI.screen = 'game'; if(!UI.tab || UI.tab === 'mp') UI.tab = 'dash'; UI.modal = null; render(); return; } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(mpLoadWorld);
 /* a player who leaves a Cabinet post (resignation, removal) can be left on the Department tab: send them home instead of looping */
 viewDept = (function(f){ return function(){ if(!isSec()){ UI.tab = 'dash'; return viewDash(); } return f.apply(this, arguments); }; })(viewDept);
+
+/* after the page's title and its lead paragraph, whether the page uses h1 or h2 */
+function blAt(h, box){ const m = h.match(/<\/h[12]>/); if(!m) return box + h; let k = m.index + 5; const m_ = h.slice(k).match(/^\s*<p class="lead[^"]*"[^>]*>[\s\S]*?<\/p>/); if(m_) k += m_[0].length; return h.slice(0, k) + box + h.slice(k); }
 
 /* v134 · One whip system. A player leader's whip notice becomes the party's whip on the bill, exactly as in single
    player: the AI members of that party follow it unless their own ideology or independence pulls them away, so a few
@@ -22151,6 +22155,177 @@ document.addEventListener('click', e => { if(!e.target.closest) return; const el
   if(a === 'reset'){ FBX.cfg = null; FBX.db = null; try{ localStorage.removeItem('capitol.fbcfg'); }catch(err){} window.CAPITOL_FB = null; try{ history.replaceState(null, '', location.pathname); }catch(err){} return again(); }
   if(a === 'newcode'){ FBX.code = ''; try{ localStorage.removeItem('capitol.table'); }catch(err){} try{ MPC.unsub.forEach(u => { try{ u(); }catch(x){} }); MPC.unsub = []; if(MPC.unsubL){ MPC.unsubL(); MPC.unsubL = null; } }catch(err){} MPC.gid = null; MPC.games = []; return again(); }
   if(a === 'invite'){ const url = fbInvite(); const done = () => toast('Invite link copied. Send it to your friends: it opens this table.', 'good'); try{ navigator.clipboard.writeText(url).then(done, () => prompt('Copy this invite link:', url)); }catch(err){ prompt('Copy this invite link:', url); } } }, true);
+
+/* v137 · Election-night Senate count. The seats not on the ballot (holdovers) are counted once, when the night starts,
+   and kept with the night. In multiplayer the night is replayed after the results were already applied to the world,
+   so recounting holdovers then also counted the newly elected senators: the Senate showed far more than 100 seats. */
+startNight = (function(f){ return function(){ const r = f.apply(this, arguments); try{ const N = G.elec && G.elec.night; const y = G.elec.year; if(N && !N.hold){ const h = { D:0, R:0 }; senate().filter(m => m.up !== y && m.special !== y).forEach(m => { const p = partyOf(m) === 'R' ? 'R' : 'D'; h[p]++; }); N.hold = h; } }catch(e){ console.error(e); } return r; }; })(startNight);
+senCount = (function(f){ return function(){ const o = f.apply(this, arguments); try{ const N = G.elec.night; const y = G.elec.year; let h = N && N.hold;
+    if(!h && G.mp){ h = { D:0, R:0 }; senate().filter(m => m.up !== y && m.special !== y && m.up !== y + 6).forEach(m => { h[partyOf(m) === 'R' ? 'R' : 'D']++; }); const cap = senate().length - (N.sen || []).length; const t = h.D + h.R; if(t > cap){ const k = cap/t; h = { D:Math.round(h.D*k), R:cap - Math.round(h.D*k) }; } }
+    if(h){ o.hD = h.D; o.hR = h.R; } }catch(e){} return o; }; })(senCount);
+
+/* v138 · Players decide what single player leaves to the AI, and real-time impeachment.
+   - Requests that the AI President (or an AI Secretary) answers in single player go to the player who holds that office:
+     a pitch for a Cabinet post, a governor asking the White House for help, the Vice President asking for a portfolio,
+     the Attorney General asking to fire a U.S. Attorney, Homeland Security asking for troops in a disaster, the
+     Secretary of Defense recommending a DEFCON change, and grant requests to a department run by a player. The holder
+     answers Yes or No on their own page; the requester hears back by letter.
+   - Impeaching a player happens in real time. When a House member files articles against a player (or the President
+     opens the nuclear briefcase), every player is alerted; the House has one minute to vote, then the Senate has one
+     minute to try the case. Players vote for their own seats; the AI members vote by party, conscience and the whips.
+     A conviction takes effect at the start of the next month's processing, before any of the official's own moves. */
+/* ---------- forcing the outcome of a single-player roll ---------- */
+function x3RndAt(s){ s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+const X3SEED = (() => { let lo = null, hi = null; for(let s = 1; s < 400000 && (lo === null || hi === null); s++){ const v = x3RndAt(s); if(lo === null && v < 0.0005) lo = s; if(hi === null && v > 0.9995) hi = s; } return { lo:lo || 1, hi:hi || 1 }; })();
+function x3Forced(yes, fn){ const s0 = _seed; _seed = yes ? X3SEED.lo : X3SEED.hi; try{ return fn(); } finally { _seed = (s0 + 0x6D2B79F5) >>> 0; } }
+/* ---------- requests that need a player's answer ---------- */
+const presU = () => (G.pres && G.pres.human && G.mp.pl[G.pres.human]) ? G.pres.human : null;
+const secU = k => { const B = Object.values(G.mp.pl).find(x => x.player.role === 'sec' && x.player.post === k); return B ? B.uid : null; };
+const X3ASK = [
+  ['pitchDo', a => true, a => presU(), (a, B) => 'asks to be nominated as ' + ((PM_[a[0]] || {}).title || a[0]), 'the President'],
+  ['reqGrant120', a => true, a => secU(a[0]), (a, B) => 'asks your department for a grant (' + (((D120[a[0]] || [])[2] || [])[0] || 'federal funds') + ')', 'the department'],
+  ['feAct', a => a[0] === 'askdod', a => presU(), (a, B) => 'asks you to deploy active-duty forces to a disaster', 'the President'],
+  ['dojAct', a => a[0] === 'askfire', a => presU(), (a, B) => 'asks you to remove the U.S. Attorney for ' + (((typeof DMETA !== 'undefined' && DMETA[a[1]]) || {}).name || 'a district'), 'the President'],
+  ['govDo', a => a[0] === 'gask', a => presU(), (a, B) => 'asks the White House for help: ' + String(a[1] || 'support'), 'the President'],
+  ['brassAct', a => a[0] === 'defrec', a => presU(), (a, B) => 'recommends moving to DEFCON ' + a[1], 'the President'],
+  ['vpAsk95', a => true, a => presU(), (a, B) => 'asks for oversight of the ' + ((PM_[a[0]] || {}).name || a[0]), 'the President']
+];
+X3ASK.forEach(([name, match, decider, label, who]) => { const f = window[name]; if(typeof f !== 'function') return;
+  window[name] = function(){ const args = [...arguments]; try{ if(!(G && G.mp && G.mp.pl) || MPC.askRun || !match(args)) return f.apply(this, args); const B = G.mp.pl[G.mp.active]; const D = decider(args); if(!B || !D || D === B.uid) return f.apply(this, args); const T = G.mp.pl[D];
+      if(!MPC.proc) return R(true, 'Sent to ' + T.name + ' (' + mpOffice(T) + '), a player. You will hear back after they decide.');
+      G.mp.ask = G.mp.ask || []; if(G.mp.ask.some(x => x.st === 'open' && x.fn === name && x.from === B.uid && JSON.stringify(x.args) === JSON.stringify(args))) return R(true, '');
+      const q = { id:'ak' + (++G.nid), fn:name, args, from:B.uid, to:D, t:G.turn, st:'open', what:label(args, B) }; G.mp.ask.push(q);
+      mqNote(D, B.name + ' ' + q.what, [B.name + ', ' + mpOffice(B) + ', ' + q.what + '.', 'Answer Yes or No on your ' + (T.player.role === 'pres' ? 'White House' : 'Department') + ' page this month.'], B.name);
+      return R(true, ''); }catch(e){ console.error(e); return f.apply(this, args); } }; });
+function x3Resolve(evs){ const L = G.mp.ask || []; L.filter(q => q.st === 'open' && G.turn - q.t >= 2).forEach(q => { q.st = 'no'; q.auto = true; });
+  L.filter(q => (q.st === 'yes' || q.st === 'no') && !q.done).forEach(q => { q.done = true; const F = G.mp.pl[q.from], T = G.mp.pl[q.to]; if(!F) return; let msg = '';
+    try{ if(q.fn === 'pitchDo' && q.st === 'yes'){ if(!G.mp.noms.some(n => n.uid === q.from && !n.done)){ G.mp.noms.push({ id:'mn' + (++G.nid), uid:q.from, post:q.args[0], kind:'sec', t0:G.turn, votes:{}, done:false }); } msg = 'President ' + (T ? T.name : '') + ' agrees: you are nominated as ' + PM_[q.args[0]].title + '. The Senate votes next month.'; evs.push('📜 President ' + (T ? T.name : '') + ' nominates ' + F.name + ' as ' + PM_[q.args[0]].title + '.'); }
+      else { mpSwapIn(q.from); MPC.askRun = true; try{ const r = x3Forced(q.st === 'yes', () => window[q.fn].apply(null, q.args)); msg = (r && r.msg) || ''; } finally { MPC.askRun = false; mpSwapOut(); } }
+    }catch(e){ console.error(e); }
+    mqNote(q.from, (q.st === 'yes' ? 'Yes: ' : 'No: ') + (T ? T.name : 'the answer'), [(T ? T.name + ', ' + mpOffice(T) : 'The office') + (q.auto ? ' did not answer your request in time, so the answer is no.' : q.st === 'yes' ? ' said yes to your request.' : ' turned your request down.'), msg].filter(Boolean), T ? T.name : 'The White House');
+    evs.push((q.st === 'yes' ? '👍 ' : '👎 ') + (T ? T.name : 'The office') + (q.st === 'yes' ? ' grants ' : ' turns down ') + F.name + '’s request.'); });
+  G.mp.ask = L.filter(q => !q.done || G.turn - q.t < 6); }
+/* a seat whose player left it (Cabinet, the bench, removal) goes back to the AI */
+function x3SeatHygiene(){ [].concat(house(), senate()).forEach(m => { if(m.human){ const B = G.mp.pl[m.human]; if(!B || B.player.mid !== m.id){ delete m.human; m.player = false; } } }); }
+mpLeaders = (function(f){ return function(evs){ f.apply(this, arguments); try{ x3Resolve(evs); x3SeatHygiene(); }catch(e){ console.error(e); } }; })(mpLeaders);
+mpApplyActs = (function(f){ return function(B, acts, evs){ f.apply(this, arguments); (acts || []).forEach(a => { try{ if(a.t !== 'askr') return; const q = (G.mp.ask || []).find(x => x.id === a.id && x.to === B.uid && x.st === 'open'); if(q) q.st = a.ok ? 'yes' : 'no'; }catch(e){ console.error(e); } }); }; })(mpApplyActs);
+function x3AskCard(){ const B = G.mp.pl[G.mp.active]; if(!B) return ''; const L = (G.mp.ask || []).filter(q => q.to === B.uid && q.st === 'open'); if(!L.length) return ''; const q0 = MPC.acts;
+  return '<div class="card"><h3>Requests waiting for your answer</h3>' + L.map(q => { const F = G.mp.pl[q.from] || {}; const cur = (q0.filter(a => a.t === 'askr' && a.id === q.id).pop() || {}).ok; return '<div class="docpick"><span class="sm"><b>' + esc(F.name || '') + '</b> (' + esc(F.player ? mpOffice(F) : '') + ') ' + esc(q.what) + '.</span><span class="row" style="gap:4px"><button class="btn sm' + (cur === true ? ' pri' : '') + '" data-x3="askr|' + q.id + '|1">Yes</button><button class="btn sm' + (cur === false ? ' pri' : '') + '" data-x3="askr|' + q.id + '|0">No</button></span></div>'; }).join('') + '<p class="muted sm">Unanswered requests count as a no after a month.</p></div>'; }
+
+/* ---------- real-time impeachment ---------- */
+const RIMP_MS = 60000;
+const rimpRef = () => MPC.db.doc('mp/' + MPC.gid + '/rimp/cur');
+mpOpen = (function(f){ return function(gid){ f.apply(this, arguments); try{ MPC.unsub.push(rimpRef().onSnapshot(s => { const prev = MPC.rimp; MPC.rimp = s.exists ? s.data() : null; const R_ = MPC.rimp; if(R_ && R_.stage !== 'done' && (!prev || prev.id !== R_.id)){ mpAlarm('⚖ ' + (R_.nuke ? 'The President opened the nuclear briefcase. ' : '') + 'Articles of impeachment against ' + R_.who.name + ', ' + R_.who.title + '. The House votes now: one minute. Go to the Impeachment page.'); try{ if(typeof sfx === 'function') sfx('alert'); }catch(e){} }
+  if(R_ && prev && prev.id === R_.id && prev.stage !== R_.stage){ toast(R_.stage === 'senate' ? 'The House impeaches ' + R_.who.name + ' (' + R_.hv.y + '–' + R_.hv.n + '). The Senate trial starts now: one minute.' : R_.res === 'removed' ? 'The Senate convicts ' + R_.who.name + ' (' + R_.sv.y + '–' + R_.sv.n + '). Removal takes effect when the month ends.' : R_.res === 'acquitted' ? 'The Senate acquits ' + R_.who.name + ' (' + R_.sv.y + '–' + R_.sv.n + ').' : 'The House rejects the articles (' + R_.hv.y + '–' + R_.hv.n + ').', R_.res === 'removed' || R_.stage === 'senate' ? 'bad' : ''); }
+  x3Tick(true); }, e => {})); }catch(e){ console.error(e); } }; })(mpOpen);
+function rimpActive(){ const R_ = MPC.rimp; return R_ && R_.stage !== 'done' && MPC.game && R_.round === MPC.game.round ? R_ : null; }
+async function rimpStart(w, art, nuke){ if(rimpActive()) return R(false, 'An impeachment vote is already under way.'); const T = impB(w); const me_ = me(); const id = 'ri' + Date.now().toString(36);
+  await rimpRef().set({ id, who:{ k:w.k, id:w.id, name:w.name, title:w.title, party:w.party }, onU:T ? T.uid : null, by:MPC.uid, byName:P().name, art:art || ['Abuse of power'], nuke:!!nuke, stage:'house', t0:Date.now(), ends:Date.now() + RIMP_MS, votes:{ H:{}, S:{} }, round:MPC.game.round, res:null });
+  return R(true, 'Articles filed. The House votes now: one minute.'); }
+impAct = (function(f){ return function(a, v){ try{ if(G && G.mp && G.mp.pl && a === 'impintro'){ const w = impTargets().find(x => x.id === v); const T = w && impB(w); if(T){ if(MPC.proc || MPC.askRun) return R(true, ''); const m = me(); if(!m || m.ch !== 'H') return R(false, 'Only a member of the House can introduce articles of impeachment.'); if((P().pc || 0) < 3) return needPC(3); mpAct({ t:'rimpc' }); rimpStart(w, articlesFor(w), false).then(r => { toast(r.msg, r.ok ? 'bad' : 'bad'); render(); }); return R(true, 'Articles filed against ' + w.name + '. The House votes now.'); } } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(impAct);
+document.addEventListener('click', e => { if(!e.target.closest) return; const el = e.target.closest('[data-mp="nopen"]'); if(!el || !(G && G.mp && MPC.playing) || P().role !== 'pres') return; setTimeout(() => { try{ rimpStart(whoPres(), ['Abuse of the nuclear command authority'], true); }catch(err){ console.error(err); } }, 400); }, true);
+/* the AI members' votes: the same on every screen (seeded), by party, conscience, scandals, the nuclear briefcase and the whips */
+function rimpAIVote(R_, m, ch){ const tp = R_.who.party === 'I' ? 'D' : R_.who.party; const p = partyOf(m) === 'I' ? 'D' : partyOf(m); const sc = Math.min(5, (G.mp.scan || []).filter(s => s.on === R_.onU && G.turn - s.t <= 12).length);
+  let q = p !== tp ? (ch === 'H' ? 0.74 : 0.66) + sc*0.04 + (R_.nuke ? 0.22 : 0) : 0.03 + sc*0.03 + (R_.nuke ? 0.55 : 0); if(Math.abs(m.x || 0) < 0.25) q = q*0.8 + 0.1;
+  const W = (G.mp.whip[ch] || {})[partyOf(m)]; if(W && W.imp) q = W.imp === 'y' ? clamp(q + 0.5, 0, 0.97) : q*0.3; return hashU(R_.id + '|' + m.id + '|' + ch) < clamp(q, 0.005, 0.99) ? 'y' : 'n'; }
+function rimpTally(R_, ch){ let y = 0, n = 0; (ch === 'H' ? house() : senate()).forEach(m => { const H = m2B(m.id); let v; if(H) v = (R_.votes[ch] || {})[m.id] || (H.uid === R_.onU ? 'n' : (partyOf(m) === 'I' ? 'D' : partyOf(m)) !== (R_.who.party === 'I' ? 'D' : R_.who.party) ? 'y' : 'n'); else v = rimpAIVote(R_, m, ch); if(v === 'y') y++; else n++; }); return { y, n }; }
+async function rimpAdvance(){ const R_ = rimpActive(); if(!R_ || Date.now() < R_.ends || !G || !G.mp || MPC.rimpBusy) return; MPC.rimpBusy = true;
+  try{ let got = { acquired:true }; try{ got = await MPC.db.doc('mp/' + MPC.gid + '/lock/rimp-' + R_.id + '-' + R_.stage).acquire({ holder:MPC.uid, ttlMs:20000 }); }catch(e){} if(!got.acquired) return;
+    const cur = await rimpRef().get(); const D = cur.exists ? cur.data() : null; if(!D || D.id !== R_.id || D.stage !== R_.stage) return;
+    if(D.stage === 'house'){ const hv = rimpTally(D, 'H'); if(hv.y > hv.n) await rimpRef().update({ stage:'senate', hv, ends:Date.now() + RIMP_MS }); else await rimpRef().update({ stage:'done', hv, res:'failed' }); }
+    else if(D.stage === 'senate'){ const sv = rimpTally(D, 'S'); await rimpRef().update({ stage:'done', sv, res:sv.y*3 >= (sv.y + sv.n)*2 ? 'removed' : 'acquitted' }); } }
+  catch(e){ console.error(e); } finally { MPC.rimpBusy = false; } }
+async function rimpVote(v){ const R_ = rimpActive(); const m = me(); if(!R_ || !m) return; const ch = R_.stage === 'house' ? 'H' : 'S'; if(m.ch !== ch){ toast(ch === 'H' ? 'Only House members vote on impeachment.' : 'Only senators vote in the trial.', 'bad'); return; } try{ await rimpRef().update({ votes:{ [ch]:{ [m.id]:v } } }); toast('Your vote is recorded.', ''); }catch(e){ toast('Your vote did not go through. Try again.', 'bad'); } }
+function x3Clock(ms){ const s = Math.max(0, Math.ceil(ms/1000)); return Math.floor(s/60) + ':' + String(s % 60).padStart(2, '0'); }
+function rimpCard(){ const R_ = MPC.rimp; if(!R_ || !MPC.game || R_.round !== MPC.game.round) return ''; const m = me(); const ch = R_.stage === 'house' ? 'H' : R_.stage === 'senate' ? 'S' : null; const mine = m && ch && m.ch === ch ? (R_.votes[ch] || {})[m.id] : null; const nv = ch ? Object.keys(R_.votes[ch] || {}).length : 0;
+  let h = '<div class="card x3-imp"><div class="eyebrow">' + (R_.nuke ? 'Emergency · the nuclear briefcase is open' : 'Articles of impeachment') + '</div><h3>' + esc(R_.who.name) + ', ' + esc(R_.who.title) + '</h3><p class="sm">' + R_.art.map(esc).join('; ') + ' · filed by ' + esc(R_.byName || 'a member') + '</p>';
+  if(R_.stage !== 'done') h += '<div class="x3-clock"><b id="x3clock">' + x3Clock(R_.ends - Date.now()) + '</b><span>' + (R_.stage === 'house' ? 'The House is voting on impeachment' : 'The Senate trial: two-thirds to convict') + (nv ? ' · ' + nv + ' player vote' + (nv > 1 ? 's' : '') + ' in' : '') + '</span></div>';
+  if(R_.hv) h += '<p class="sm">House: <b>' + R_.hv.y + '–' + R_.hv.n + '</b> ' + (R_.hv.y > R_.hv.n ? '(impeached)' : '(rejected)') + '</p>'; if(R_.sv) h += '<p class="sm">Senate: <b>' + R_.sv.y + ' guilty – ' + R_.sv.n + ' not guilty</b> ' + (R_.res === 'removed' ? '(convicted: removed when the month ends)' : '(acquitted)') + '</p>';
+  if(ch && m && m.ch === ch) h += '<div class="row" style="gap:6px;margin-top:6px"><button class="btn' + (mine === 'y' ? ' pri' : '') + '" data-x3="rv|y">' + (ch === 'H' ? 'Yea: impeach' : 'Guilty') + '</button><button class="btn' + (mine === 'n' ? ' pri' : '') + '" data-x3="rv|n">' + (ch === 'H' ? 'Nay' : 'Not guilty') + '</button></div><p class="muted sm" style="margin:6px 0 0">If you don’t vote, you vote with your party. The AI members follow party, conscience and the whips.</p>';
+  else if(ch) h += '<p class="muted sm">' + (ch === 'H' ? 'Only House members vote now.' : 'Only senators vote in the trial.') + '</p>';
+  return h + '</div>'; }
+function x3Tick(force){ try{ const R_ = rimpActive(); let bar = document.getElementById('x3bar');
+  if(R_ && MPC.playing){ if(!bar){ bar = document.createElement('div'); bar.id = 'x3bar'; document.body.appendChild(bar); } bar.innerHTML = '⚖ <b>' + (R_.stage === 'house' ? 'House impeachment vote' : 'Senate trial') + '</b> · ' + esc(R_.who.name) + ' · <b>' + x3Clock(R_.ends - Date.now()) + '</b> <button data-x3="go">Vote now</button>'; const c = document.getElementById('x3clock'); if(c) c.textContent = x3Clock(R_.ends - Date.now()); if(Date.now() >= R_.ends) rimpAdvance(); }
+  else if(bar) bar.remove(); if(force && MPC.playing && UI.screen === 'game' && UI.tab === 'impeach') render(); }catch(e){} }
+setInterval(() => x3Tick(false), 1000);
+/* the verdict takes effect when the month is processed, before the official's own moves replay */
+mpSwapIn = (function(f){ return function(uid){ try{ if(MPC.proc && G && G.mp && G.mp.rimpT !== G.turn){ G.mp.rimpT = G.turn; x3ApplyRimp(); } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(mpSwapIn);
+function x3ApplyRimp(){ const R_ = MPC.rimp; if(!R_ || R_.stage !== 'done' || !R_.res) return; G.mp.rimpDone = G.mp.rimpDone || {}; if(G.mp.rimpDone[R_.id]) return; G.mp.rimpDone[R_.id] = true; const L = lrEnsure();
+  if(R_.res === 'failed'){ L.q.push('⚖ The House rejects impeachment of ' + R_.who.name + ', ' + R_.hv.y + '–' + R_.hv.n + '.'); return; }
+  if(R_.res === 'acquitted'){ L.q.push('⚖ The House impeaches ' + R_.who.name + ' (' + R_.hv.y + '–' + R_.hv.n + '); the Senate acquits, ' + R_.sv.y + ' guilty to ' + R_.sv.n + '.'); return; }
+  const w = R_.who.k === 'pres' ? whoPres() : R_.who.k === 'vp' ? whoVP() : R_.who; const T = R_.onU && G.mp.pl[R_.onU]; if(T && w.name !== T.name && (R_.who.k === 'pres' || R_.who.k === 'vp')){ L.q.push('⚖ ' + R_.who.name + ' no longer holds the office; the verdict is moot.'); return; }
+  try{ removeOfficial({ who:w, dq:false }); }catch(e){ console.error(e); } if(T && G.mp.nk && R_.who.k === 'pres') G.mp.nk.done = true;
+  L.q.push('⚖ The Senate convicts ' + R_.who.name + ', ' + R_.sv.y + '–' + R_.sv.n + ', and removes ' + (R_.who.k === 'pres' ? 'the President' : 'them') + ' from office' + (R_.nuke ? '. No launch takes place.' : '.'));
+  if(R_.who.k === 'pres') L.q.push('🇺🇸 ' + G.pres.name + ' takes the oath as President.'); }
+mpApplyActs = (function(f){ return function(B, acts, evs){ f.apply(this, arguments); (acts || []).forEach(a => { if(a.t === 'rimpc'){ B.player.pc = Math.max(0, (B.player.pc || 0) - 3); B.player.profile = clamp((B.player.profile || 0) + 6, 0, 100); } }); }; })(mpApplyActs);
+/* a removed President can't launch */
+mpNuke = (function(f){ return function(evs){ try{ const R_ = MPC.rimp; if(R_ && R_.res === 'removed' && R_.who.k === 'pres' && G.mp.nk && !G.mp.nk.done){ G.mp.nk.done = true; G.mp.nk.launch = false; } }catch(e){} return f.apply(this, arguments); }; })(mpNuke);
+/* place the cards and wire the buttons */
+blInject = (function(f){ return function(h){ h = f.apply(this, arguments); try{ const tab = UI.tab; if(tab === 'impeach' && MPC.rimp && MPC.game && MPC.rimp.round === MPC.game.round) h = h.replace(/<div class="card"[^>]*>\s*(<p[^>]*>)?\s*No impeachment is under way\.?\s*(<\/p>)?\s*<\/div>/, ''); let x = ''; if(tab === 'impeach') x += rimpCard(); if(['exec', 'dept', 'office', 'dash'].includes(tab)) x += x3AskCard(); if(!x) return h; const i = h.indexOf('<div class="mpblend">'); if(i >= 0) return h.slice(0, i + 21) + x + h.slice(i + 21); return blAt(h, '<div class="mpblend">' + x + '</div>'); }catch(e){ console.error(e); return h; } }; })(blInject);
+document.addEventListener('click', e => { if(!e.target.closest) return; const el = e.target.closest('[data-x3]'); if(!el) return; e.stopPropagation(); e.preventDefault(); const [a, k, v] = el.dataset.x3.split('|');
+  if(a === 'go'){ if(G && MPC.playing){ UI.screen = 'game'; UI.tab = 'impeach'; UI.modal = null; render(); } return; }
+  if(a === 'rv'){ rimpVote(k); return; }
+  if(a === 'askr'){ MPC.acts = MPC.acts.filter(x => !(x.t === 'askr' && x.id === k)); mpAct({ t:'askr', id:k, ok:v === '1' }); } }, true);
+mpRecord = (function(f){ return function(e){ try{ if(e && e.target && e.target.closest && e.target.closest('[data-x3],#x3bar,#mpalarm')) return; }catch(err){} return f.apply(this, arguments); }; })(mpRecord);
+(function(){ const s = document.createElement('style'); s.textContent = `
+.x3-imp{border-left:4px solid #7f1d1d!important}
+.x3-clock{display:flex;align-items:center;gap:12px;margin:8px 0;padding:10px 12px;border-radius:10px;background:#fbeaea}
+.x3-clock b{font:800 28px/1 var(--mono,monospace);color:#7f1d1d}
+#x3bar{position:fixed;left:50%;transform:translateX(-50%);bottom:76px;z-index:95;background:#7f1d1d;color:#fff;padding:8px 10px 8px 14px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px;display:flex;gap:8px;align-items:center;max-width:calc(100vw - 24px)}
+#x3bar button{background:#fff;color:#7f1d1d;border:0;border-radius:999px;padding:5px 12px;font-weight:800;cursor:pointer}
+#mpalarm{z-index:2000!important}
+`; document.head.appendChild(s); })();
+/* the month can't be processed in the middle of an impeachment vote */
+mpAllReady = (function(f){ return function(){ try{ if(rimpActive()) return false; }catch(e){} return f.apply(this, arguments); }; })(mpAllReady);
+
+/* v139 · The new Congress organizes before it is sworn in.
+   As in real life, leadership is chosen between the election and opening day:
+   - The month after a November election, every leadership post and every committee gavel opens. Members-elect file in
+     November; the caucuses and the Steering Committees vote in December.
+   - The Speaker is elected on opening day, at the turn of the year: in December each House member-elect also says how
+     they will vote on the floor (for the party's nominee, the other party's, someone else, or present), so the new
+     Speaker is in the chair when the Congress begins. If no one wins a majority, the House keeps voting in January. */
+mpAdvance = (function(f){ return function(evs){ const r = f.apply(this, arguments); try{ const L = lrEnsure(); if(G.m === 11 && G.y % 2 === 0 && L.cy !== G.y){ L.cy = G.y;
+      ['H', 'S'].forEach(ch => LR_POSTS[ch].forEach(post => { const k = ch + ':' + post; if(!L.r[k]) mpLrOpen(ch, post, 'the new Congress'); if(L.r[k] && L.r[k].st === 'file') L.r[k].t = G.turn - 1; })); L.q.length = 0;
+      const X = mx2(); X.gcy = G.y; X.gwin = { t:G.turn - 1 }; X.gb = {};
+      evs.push('🏛 The ' + ord((G.congress || 0) + 1) + ' Congress organizes now. Members-elect file for Speaker, the party leaders and whips, and the committee gavels this month; the caucuses vote in December, and the House elects its Speaker on opening day.'); } }catch(e){ console.error(e); } return r; }; })(mpAdvance);
+/* December: the caucus picks its Speaker nominee, and the floor vote follows at once with the members' declared votes */
+lrResolve = (function(f){ return function(r, evs){ const was = r.st; const res = f.apply(this, arguments);
+  try{ if(r.k === 'H:speaker' && was === 'vote' && r.st === 'floor' && G.m === 12 && !r.fast){ r.fast = true; r.fv = Object.assign({}, r.pfv || {}); r.t = G.turn - 1; evs.push('🔨 Opening day: the House of Representatives meets to elect its Speaker.'); f.call(this, r, evs); } }catch(e){ console.error(e); } return res; }; })(lrResolve);
+mpApplyActs = (function(f){ return function(B, acts, evs){ f.apply(this, arguments); (acts || []).forEach(a => { try{ if(a.t !== 'lfloor') return; const r = (G.mp.lr || { r:{} }).r['H:speaker']; const m = lrMemB(B); if(r && r.st === 'vote' && m && m.ch === 'H'){ r.pfv = r.pfv || {}; r.pfv[B.uid] = a.v; } }catch(e){ console.error(e); } }); }; })(mpApplyActs);
+lrHTML = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const r = (G.mp.lr || { r:{} }).r['H:speaker']; const B = G.mp.pl[G.mp.active]; const m = lrMemB(B); if(!r || r.st !== 'vote' || !m || m.ch !== 'H') return h; const cur = (MPC.acts.filter(a => a.t === 'lfloor').pop() || {}).v || (r.pfv || {})[B.uid];
+    const own = partyOf(m) === r.side; const b = (v, l) => '<button class="btn sm' + (cur === v ? ' pri' : '') + '" data-mlr="lfloor|' + v + '">' + l + '</button>';
+    const blk = '<div class="lr-act"><b>Opening day: how you will vote for Speaker</b><p class="muted sm" style="margin:2px 0 6px">The House elects its Speaker as the new Congress begins, right after the caucus picks its nominee. ' + (own ? 'Your party’s nominee is whoever wins the caucus vote above.' : 'The other party will nominate its own candidate.') + '</p><div class="row" style="gap:6px;flex-wrap:wrap">' + b('nom', 'The majority’s nominee') + b('min', 'The minority leader') + b('oth', 'Someone else (protest)') + b('present', 'Present') + '</div><p class="muted sm" style="margin:6px 0 0">If you don’t choose, you vote for your own party’s candidate.</p></div>';
+    const i = h.lastIndexOf('</div>'); return i > 0 ? h.slice(0, i) + blk + h.slice(i) : h + blk; }catch(e){ console.error(e); return h; } }; })(lrHTML);
+document.addEventListener('click', e => { if(!e.target.closest) return; const el = e.target.closest('[data-mlr^="lfloor|"]'); if(!el) return; e.stopPropagation(); e.preventDefault(); const v = el.dataset.mlr.split('|')[1]; MPC.acts = MPC.acts.filter(x => x.t !== 'lfloor'); mpAct({ t:'lfloor', v }); }, true);
+
+/* v140 · The President takes office on January 20, not the night of the election.
+   After a presidential election the winner (and their running mate) become President-elect and Vice President-elect.
+   The sitting President, AI or player, keeps every power, including the nuclear briefcase and the veto, through the
+   lame-duck weeks. The new administration is sworn in when January begins. */
+const peCopy = o => JSON.parse(JSON.stringify(o || {}));
+mpAdvance = (function(f){ return function(evs){ const pres = G.m === 10 && G.y % 4 === 0 && !G.mp.pe; let old = null;
+  if(pres){ old = { pres:peCopy(G.pres), vp:peCopy(G.vp), roles:{} }; Object.values(G.mp.pl).forEach(B => { if(B.player.role === 'pres' || B.player.role === 'vp') old.roles[B.uid] = { role:B.player.role, status:B.status }; }); }
+  const r = f.apply(this, arguments);
+  try{ if(old && (G.pres.name !== old.pres.name || G.vp.name !== old.vp.name)){ const pe = { pres:peCopy(G.pres), vp:peCopy(G.vp), y:G.y + 1, roles:{} };
+      Object.values(G.mp.pl).forEach(B => { const p = B.player; if((p.role === 'pres' && G.pres.name === B.name) || (p.role === 'vp' && G.vp.name === B.name)){ pe.roles[B.uid] = p.role; p.role = 'rep'; p.mid = null; } });
+      Object.entries(pe.roles).forEach(([u, role]) => { G.mp.pl[u].elect = role; });
+      G.pres = old.pres; G.vp = old.vp; Object.entries(old.roles).forEach(([u, o]) => { const B = G.mp.pl[u]; if(B && !pe.roles[u]){ B.player.role = o.role; B.status = o.status; } });
+      G.mp.pe = pe; evs.push('🇺🇸 ' + pe.pres.name + ' is President-elect and takes office on January 20, ' + pe.y + '. ' + old.pres.name + ' remains President until then.'); }
+    if(G.m === 1 && G.mp.pe){ const pe = G.mp.pe; G.mp.pe = null; const outU = Object.keys(G.mp.pl).filter(u => ['pres', 'vp'].includes(G.mp.pl[u].player.role) && !pe.roles[u]);
+      outU.forEach(u => { const B = G.mp.pl[u]; Object.assign(B.player, { role:'rep', mid:null, challenger:true }); B.status = 'citizen'; evs.push('👋 ' + B.name + ' leaves office.'); });
+      G.pres = pe.pres; G.vp = pe.vp; Object.entries(pe.roles).forEach(([u, role]) => { const B = G.mp.pl[u]; if(!B) return; B.player.role = role; B.player.mid = null; B.status = 'office'; B.elect = null; if(role === 'pres'){ G.pres.player = true; G.pres.human = u; B.player.pc = Math.max(B.player.pc || 0, 25); } else { G.vp.player = true; G.vp.human = u; } });
+      evs.push('🇺🇸 ' + G.pres.name + ' takes the oath of office as President of the United States' + (G.vp.name ? ', with ' + G.vp.name + ' as Vice President' : '') + '.'); } }catch(e){ console.error(e); } return r; }; })(mpAdvance);
+mpOffice = (function(f){ return function(B){ try{ if(B && B.elect === 'pres') return 'President-elect'; if(B && B.elect === 'vp') return 'Vice President-elect'; }catch(e){} return f.apply(this, arguments); }; })(mpOffice);
+
+/* v141 · A player Vice President breaks Senate ties. Ties used to be settled for the AI Vice President while the month
+   was processed, so a player VP never got the deciding vote. Now the roll call is held open, the VP gets a letter, and
+   the tie-break appears on their screen next month exactly as in single player; if they don't vote, the vote is cast
+   as the White House wants. */
+vpHold = (function(f){ return function(kind, o, t){ try{ const U = G && G.mp && G.vp && G.vp.human; if(U && G.mp.pl[U] && G.mp.pl[U].player.role === 'vp' && !isVP()){ G.vpPend = G.vpPend || []; G.vpPend.push({ kind, id:o.id, y:t.y, n:t.n, t:G.turn, title:kind === 'nom' ? o.name + ' to be ' + PM_[o.post].title : (o.num + ' ' + o.title), pres:kind === 'nom' ? true : presSupports(o) });
+      notify('The Senate is tied ' + t.y + '–' + t.n + ' on ' + (kind === 'nom' ? 'the nomination of ' + o.name : o.title) + '. The vote is held open for the Vice President.', 'bad');
+      try{ mqNote(U, 'Tie vote in the Senate: you decide', ['The Senate is tied ' + t.y + '–' + t.n + ' on ' + (kind === 'nom' ? 'the nomination of ' + o.name : (o.num + ' ' + o.title)) + '.', 'As President of the Senate you cast the deciding vote. It is waiting on your screen this month; if you don’t vote, it is cast as the White House wants.'], 'Secretary of the Senate'); }catch(e){}
+      return true; } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(vpHold);
 
 /* ===== HOW A GAME BEGINS: the 2026 midterm campaign (or straight into office) ===== */
 function beginGame(mode){ const pl = P(); const E = newElection(2026); E.plan = isPres() ? 'none' : 'reelect'; E.phase = 'filed';
