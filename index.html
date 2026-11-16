@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script>window.CAPITOL_ONLINE = true; window.CAPITOL_FB = {"apiKey":"AIzaSyDtmcPLr2RikGcnYMz6N58QsAPgKcEdD9I","authDomain":"capitol-53385.firebaseapp.com","projectId":"capitol-53385","storageBucket":"capitol-53385.firebasestorage.app","messagingSenderId":"404006748782","appId":"1:404006748782:web:153934d9662c537ed49c7f"};</script><style>html,body{margin:0;padding:0}</style></head><body><title>Capitol</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex, nofollow, noarchive"><meta name="googlebot" content="noindex, nofollow"><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script>window.CAPITOL_ONLINE = true; window.CAPITOL_FB = {"apiKey":"AIzaSyDtmcPLr2RikGcnYMz6N58QsAPgKcEdD9I","authDomain":"capitol-53385.firebaseapp.com","projectId":"capitol-53385","storageBucket":"capitol-53385.firebasestorage.app","messagingSenderId":"404006748782","appId":"1:404006748782:web:153934d9662c537ed49c7f"};</script><style>html,body{margin:0;padding:0}</style></head><body><title>Capitol</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;700;800;900&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -22326,6 +22326,22 @@ vpHold = (function(f){ return function(kind, o, t){ try{ const U = G && G.mp && 
       notify('The Senate is tied ' + t.y + '–' + t.n + ' on ' + (kind === 'nom' ? 'the nomination of ' + o.name : o.title) + '. The vote is held open for the Vice President.', 'bad');
       try{ mqNote(U, 'Tie vote in the Senate: you decide', ['The Senate is tied ' + t.y + '–' + t.n + ' on ' + (kind === 'nom' ? 'the nomination of ' + o.name : (o.num + ' ' + o.title)) + '.', 'As President of the Senate you cast the deciding vote. It is waiting on your screen this month; if you don’t vote, it is cast as the White House wants.'], 'Secretary of the Senate'); }catch(e){}
       return true; } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(vpHold);
+
+/* v142 · A player President decides every bill on their desk. While the month was processed the "you" in the game is
+   nobody, so new bills were decided on the spot (signed, or law without signature) before the player President ever saw
+   them. Now a bill presented this month waits on the President's desk with a letter; next month the President signs or
+   vetoes it. A bill left untouched becomes law without signature after ten days (or is pocket-vetoed after
+   adjournment), exactly as in single player. */
+resolveDesk = (function(f){ return function(){ const U = G && G.mp && G.pres && G.pres.human; const B = U && G.mp.pl[U]; if(!B || B.player.role !== 'pres') return f.apply(this, arguments);
+  const fresh = G.desk.filter(id => { const b = G.bills.find(x => x.id === id); return b && b.presT === G.turn && !b.presAct; });
+  fresh.forEach(id => { const b = G.bills.find(x => x.id === id); if(b && !b.mpNoted){ b.mpNoted = true; try{ mqNote(U, 'Enrolled bill: ' + b.num + ', ' + b.title, ['Congress has presented ' + b.num + ', ' + b.title + ', for your signature.', 'Sign or veto it on your desk this month. If you do nothing it becomes law without your signature after ten days' + (adjourned && adjourned() === 'sine' ? ', or is pocket-vetoed because Congress has adjourned.' : '.')], 'The Enrolling Clerk'); }catch(e){} } });
+  const pf = G.pres.player; G.pres.player = true; G.desk = G.desk.filter(id => !fresh.includes(id)); try{ return f.apply(this, arguments); } finally { G.desk = G.desk.concat(fresh); G.pres.player = pf; } }; })(resolveDesk);
+
+/* v143 · No bill is introduced in a player's name unless that player introduced it. The AI's monthly bills, lobby bills,
+   the President's priority bills and the like used to pick any member as sponsor, players included; in multiplayer
+   that put bills you never wrote under your name. Such a bill now goes to an AI member of the same party and chamber. */
+introduce = (function(f){ return function(o){ try{ if(G && G.mp && G.mp.pl && o && o.sponsor && o.sponsor !== 'pres'){ const m = byId(o.sponsor); const B = m && m.human && G.mp.pl[m.human];
+      if(B && !(G.mp.active === m.human && G.player && G.player.mid === m.id)){ const L = (m.ch === 'H' ? house() : senate()).filter(x => !x.human && !x.player && partyOf(x) === partyOf(m)); const sp = L.length ? L[Math.floor(rnd()*L.length)] : null; if(sp) o = Object.assign({}, o, { sponsor:sp.id }); } else if(B) o = Object.assign({}, o, { mpOwn:m.human }); } }catch(e){ console.error(e); } return f.call(this, o); }; })(introduce);
 
 /* ===== HOW A GAME BEGINS: the 2026 midterm campaign (or straight into office) ===== */
 function beginGame(mode){ const pl = P(); const E = newElection(2026); E.plan = isPres() ? 'none' : 'reelect'; E.phase = 'filed';
