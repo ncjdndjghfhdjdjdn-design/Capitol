@@ -26902,6 +26902,15 @@ if(typeof mlPaper === 'function') mlPaper = (function(f){ return function(){ ret
 (function(){ const S = {"usarcmi": __I[424], "200mp": __I[425], "11tac": __I[426], "807mdsc": __I[427], "335sig": __I[428], "416tec": __I[429], "412tec": __I[430], "377tsc": __I[431], "79tsc": __I[432]};
   Object.keys(S).forEach(id => { if(!ORB[id]) return; SSIIMG[id] = S[id]; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = S[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); }); })();
 
+/* ===== v216 · Army command patches supplied by the player (sleeve patch and unit emblem): TRADOC, Army Materiel Command, Army Futures
+   Command, MEDCOM, U.S. Army Corps of Engineers, Military District of Washington, Combined Arms Center, Cadet Command (ROTC), Recruiting
+   Command. Subordinate commands that wear their parent's patch show it as their emblem too: AMC's life-cycle and sustainment commands,
+   the Corps of Engineers divisions, the centers of excellence (TRADOC) and DEVCOM (Army Futures Command). West Point keeps its own crest. ===== */
+(function(){ const S = {"tradoc": __I[433], "usamc": __I[434], "afc": __I[435], "medcom": __I[436], "usace": __I[437], "mdw": __I[438], "cac": __I[439], "usacc": __I[440], "usarec": __I[441]};
+  Object.keys(S).forEach(id => { if(!ORB[id]) return; SSIIMG[id] = S[id]; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = S[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); });
+  const inherit = { usamc:/Sustainment Command|TACOM|Aviation and Missile|Communications-Electronics|Joint Munitions/, usace:/Division$/, tradoc:/Center of Excellence/, afc:/DEVCOM/ };
+  ORBK.forEach(id => { const x = ORB[id]; const key = 'ORB_' + id.toUpperCase(); if(SEAL[key] || /West Point|Military Academy/.test(x.n)) return; for(const p of Object.keys(inherit)){ if(S[p] && orbChain(id).includes(p) && inherit[p].test(x.n) && ['div', 'army', 'bde'].includes(x.e)){ SEAL[key] = S[p]; break; } } }); })();
+
 boot();
 </script>
 </body></html>
