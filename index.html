@@ -26895,6 +26895,13 @@ if(typeof mlPaper === 'function') mlPaper = (function(f){ return function(){ ret
   Object.keys(S).forEach(id => { if(!ORB[id]) return; SSIIMG[id] = S[id]; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = S[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); });
   Object.keys(E).forEach(id => { if(!ORB[id]) return; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = E[id]; }); })();
 
+/* ===== v215 · Army Reserve theater and functional command patches supplied by the player (sleeve patch and unit emblem):
+   Military Intelligence Readiness Command, 200th Military Police Command, 11th Theater Aviation Command, 807th Medical Command
+   (Deployment Support), 335th Signal Command (Theater), 412th and 416th Theater Engineer Commands, 377th Theater Sustainment Command,
+   and the 79th Theater Sustainment Command (the Cross of Lorraine it inherited from the 79th Infantry Division). ===== */
+(function(){ const S = {"usarcmi": __I[424], "200mp": __I[425], "11tac": __I[426], "807mdsc": __I[427], "335sig": __I[428], "416tec": __I[429], "412tec": __I[430], "377tsc": __I[431], "79tsc": __I[432]};
+  Object.keys(S).forEach(id => { if(!ORB[id]) return; SSIIMG[id] = S[id]; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = S[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); }); })();
+
 boot();
 </script>
 </body></html>
