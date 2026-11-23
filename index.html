@@ -26750,6 +26750,32 @@ document.addEventListener('click', e => { if(!G || UI.screen !== 'game') return;
   try{ if(a === 'op'){ const [id, k] = v.split('|'); r = opAct205(id, k); } else if(a === 'creq'){ const [id, k] = v.split('|'); r = cmdReq205(id, k); } else if(['cq1', 'cq0', 'cje1', 'cje0'].includes(a)) r = cjAct205(a, v); else if(['mord', 'mok', 'mno'].includes(a)) r = milAct205(a, v); else r = deskAct205(a, v); }catch(err){ console.error(err); r = R(false, 'Something went wrong.'); }
   if(r && r.msg) toast(r.msg, r.ok ? '' : 'bad'); render(); }, true);
 
+/* ===== v206 · Grades follow the law: no colonel commands Cyber Command.
+   - One-star and two-star grades (O-7, O-8) come only from promotion boards: their posts go to officers who already hold the grade.
+   - Three-star posts go to major generals / rear admirals (O-8); four-star posts to three-stars (O-9). A two-star jumping straight
+     to four stars happens, but very rarely (score 88+, joint experience, about 5 percent).
+   - Pending nominations that skip grades are withdrawn, and an officer already sitting in a post far above his or her grade
+     (older saves) is reassigned with orders. ===== */
+function need206(pg){ return pg <= 8 ? pg : pg - 1; }
+function postG206(k){ try{ const p = offPosts().find(x => x.k === k); return p ? p.g : 0; }catch(e){ return 0; } }
+function why206(pg){ return pg <= 8 ? offRank(pg) + ' is a permanent grade won only at a promotion board; ' + (pg === 7 ? 'one-star' : 'two-star') + ' posts go to officers who already wear it.' : (pg === 9 ? 'Three-star' : 'Four-star') + ' posts are filled from officers who are already O-' + (pg - 1) + ' (' + offRank(pg - 1) + ').'; }
+fldReq = (function(f){ return function(k){ try{ const M = offE(); const p = offPosts().find(x => x.k === k); if(p && !M.out && p.k !== M.post.k){ const need = need206(p.g);
+  if(M.g < need){ const rare = p.g === 10 && M.g === 8 && M.score >= 88 && (M.joint || 0) >= 1;
+    if(!rare){ return R(false, 'Not eligible: ' + p.title + ' carries the grade of O-' + p.g + '. ' + why206(p.g)); }
+    if(M.reqT != null && G.turn - M.reqT < 6) return f.apply(this, arguments); if(r161() >= 0.05){ if(!spend(1)) return needPC(1); M.reqT = G.turn; offHist('Asked to be considered for ' + p.title + '; the request was returned.'); offDoc('reqno', { title:p.title, pg:p.g, need:offRank(9) }); return R(false, 'Returned: the White House wants a three-star for ' + p.title + '. Jumping from two to four stars is very rare.'); }
+    const r = f.apply(this, arguments); try{ const v = (M.vac || []).find(x => x.k === k && x.mine); if(v) v.rare206 = 1; }catch(e){} return r; } } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(fldReq);
+/* the board itself never nominates across grades */
+offSelect = (function(f){ return function(v){ try{ const M = offE(); if(v && v.g && M.g < need206(v.g) && !v.rare206){ offHist('Considered for ' + v.title + '; not eligible in grade.'); return; } }catch(e){} return f.apply(this, arguments); }; })(offSelect);
+offConfirm = (function(f){ return function(n){ try{ const M = offE(); if(n && n.g && M.g < need206(n.g) && !(n.rare206 || (M.vac || []).some(v => v.k === n.k && v.rare206))){ n.st = 'fail'; n.votes = 0; offHist('Nomination for ' + n.title + ' withdrawn: the post carries the grade of O-' + n.g + '.'); notify('The White House withdraws ' + P().name + '’s nomination for ' + n.title + ': the post needs an officer of higher grade.', ''); return; } }catch(e){} return f.apply(this, arguments); }; })(offConfirm);
+/* nominations carry the rare flag through */
+if(typeof offSelect === 'function') offSelect = (function(f){ return function(v){ const r = f.apply(this, arguments); try{ if(v && v.rare206){ const n = (offE().noms || []).find(x => x.k === v.k && x.st === 'hear'); if(n) n.rare206 = 1; } }catch(e){} return r; }; })(offSelect);
+/* older saves: an officer sitting in a post well above his or her grade is reassigned */
+function gradeFix206(){ try{ if(!(G && G.player && isOff())) return; const M = offE(); if(M.out || !M.post) return; const k = M.post.k || ''; if(!/^(cc:|jcs:|u:|dj$|dia$|js:|jtf:|ag:|ccj:|ngb:|svc:)/.test(k)) return; const pg = postG206(k); if(!pg || pg < 7) return;
+  if(M.g >= pg) return; if(M.g >= need206(pg)){ M.g = pg; return; }
+  const old = M.post.title; offAssign(M.g, 'Reassigned: ' + old + ' is an O-' + pg + ' post and an officer of grade O-' + M.g + ' cannot hold it'); notify(P().name + ' is reassigned: ' + old + ' carries the grade of O-' + pg + '.', ''); }catch(e){ console.error(e); } }
+offMonth = (function(f){ return function(){ gradeFix206(); return f.apply(this, arguments); }; })(offMonth);
+render = (function(f){ return function(){ if(UI && UI.screen === 'game') gradeFix206(); return f.apply(this, arguments); }; })(render);
+
 boot();
 </script>
 </body></html>
