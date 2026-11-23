@@ -26388,6 +26388,70 @@ offView = (function(f){ return function(){ let h = f.apply(this, arguments); try
   const at = h.indexOf('<div class="card a197">'); h = at >= 0 ? h.slice(0, at) + card + h.slice(at) : h + card; }catch(e){ console.error(e); } return h; }; })(offView);
 document.addEventListener('click', e => { if(!G) return; const el = e.target.closest && e.target.closest('[data-w198],[data-w198e]'); if(!el) return; e.preventDefault(); e.stopPropagation(); const r = el.dataset.w198 != null ? wAct198(+el.dataset.w198) : wEv198(+el.dataset.w198e); if(r && r.msg) toast(r.msg, r.ok ? '' : 'bad'); render(); }, true);
 
+/* ===== v199 · Security clearances follow the officer's job.
+   Before, officers had no clearance at all, so even the commander of Cyber Command could not open the Cyber Command page. Now:
+   - every officer holds at least a Secret clearance; Top Secret from major up and in sensitive fields; TS/SCI in intelligence,
+     cyber, special operations and nuclear fields, for generals, and in every joint, agency and White House national-security job;
+   - compartments (read-ins) come with the job and are dropped when the officer leaves it: SI (signals intelligence), TK (overhead
+     imagery), HCS (human intelligence), Covert Action, NC2 (nuclear command and control), SAP (special access programs) and
+     CYBER (Cyber Command operations);
+   - pages check them: the Cyber Command operations floor needs a CYBER read-in; the CIA's embassies and stations view and
+     the new CIA files need HCS; the nuclear command panels need NC2; the National Intelligence Board needs TS/SCI.
+   A clearance card on the career page shows the level and read-ins, and why. ===== */
+const COMP199 = { SI:'SI — signals intelligence', TK:'TK — overhead imagery (TALENT KEYHOLE)', HCS:'HCS — human intelligence', COV:'Covert Action — presidential findings', NC2:'NC2 — nuclear command and control', SAP:'SAP — special access programs', CYB:'CYBER — Cyber Command operations' };
+function offClear199(M){ M = M || offE(); const out = { lvl:2, c:new Set(), why:[] }; if(!M || M.out) return { lvl:0, c:new Set(), why:['Out of service'] };
+  const F = typeof fldOf === 'function' ? fldOf(M) : null; const fk = F ? F.k : ''; const k = (M.post && M.post.k) || ''; const jk = k.startsWith('jx:') ? k.slice(3) : ''; const add = (lvl, comps, why) => { if(lvl > out.lvl) out.lvl = lvl; (comps || []).forEach(c => out.c.add(c)); if(why) out.why.push(why); };
+  const chain = M.unit && ORB[M.unit] ? [M.unit].concat(orbChain(M.unit)) : [];
+  out.why.push('Secret: every commissioned officer');
+  if(M.g >= 4) add(3, [], 'Top Secret: field-grade officer');
+  if(['mi', 'isr', 'cw', 'osi'].includes(fk)) add(4, ['SI', 'TK'], 'TS/SCI: intelligence career field');
+  if(['cyb', 'ew'].includes(fk)) add(4, ['SI'], 'TS/SCI: cyber or electronic warfare career field');
+  if(['sf', 'nsw', 'mso'].includes(fk)) add(4, ['SAP'], 'TS/SCI: special operations career field');
+  if(fk === 'msl' || (fk === 'sub' && /ssbn/.test(chain.join(' '))) || (fk === 'pil' && ORB[M.home] && ORB[M.home].k === 'bmb')) add(4, ['NC2'], 'TS/SCI with nuclear read-in: nuclear forces');
+  if(M.g >= 7) add(4, [], 'TS/SCI: general or flag officer');
+  /* the job */
+  if(k === 'cc:CYBERCOM' || chain.some(id => ['cnmf', 'jfhqd', 'arcyber', '16af', '10flt', 'marforcyber', 'md6', 'cpb', '780mi'].includes(id))) add(4, ['CYB', 'SI'], 'CYBER and SI read-ins: assigned to Cyber Command or a cyber unit');
+  if(k === 'cc:CYBERCOM' || jk === 'nsa' || k === 'ic:nsa') add(4, ['SI', 'CYB'], 'SI read-in: National Security Agency');
+  if(jk === 'cia' || k === 'ic:adma' || k === 'ic:cia') add(4, ['HCS', 'COV', 'SI'], 'HCS and Covert Action read-ins: Central Intelligence Agency');
+  if(['dia', 'dao', 'nga', 'nro', 'odni', 'nctc', 'dcsa'].includes(jk) || ['dia', 'ic:nga', 'ic:nro', 'ic:odni', 'ic:j2'].includes(k)) add(4, ['SI', 'TK', 'HCS'], 'SI, TK and HCS read-ins: intelligence community');
+  if(/^(jcs:|js:)/.test(k) || /^j[1-8]$|jsaide|jsea/.test(jk) || k === 'dj') add(4, ['SI', 'TK'].concat(['jcs:cjcs', 'jcs:vcjcs'].includes(k) || jk === 'j3' || k === 'js:j3' ? ['NC2', 'COV'] : []), 'TS/SCI: the Joint Staff');
+  if(k.startsWith('osd:') || /^osd/.test(jk)) add(4, ['SI', 'TK', 'SAP'], 'TS/SCI: Office of the Secretary of Defense');
+  if(k.startsWith('cc:')) add(4, ['SI', 'TK'].concat(k === 'cc:STRATCOM' ? ['NC2'] : []).concat(k === 'cc:SOCOM' ? ['SAP'] : []), 'TS/SCI: combatant command');
+  if(['whaide', 'whvp'].includes(jk)) add(4, ['NC2'], 'NC2 read-in: military aide (the nuclear “football”)');
+  if(['whca', 'whpag', 'whhmx', 'whcd', 'whmu'].includes(jk)) add(4, [], 'TS/SCI: White House Military Office (Yankee White)');
+  if(['nsc'].includes(jk)) add(4, ['SI', 'TK', 'HCS', 'COV'], 'TS/SCI and Covert Action: National Security Council staff');
+  if(['jsoc', 'socom'].includes(jk) || k === 'ag:jsoc') add(4, ['SAP', 'SI'], 'SAP read-in: special operations command');
+  if(['darpa', 'mdag', 'sda', 'dtra'].includes(jk) || ['ag:mda'].includes(k)) add(4, ['SAP'], 'SAP read-in: defense research and development');
+  if(['disa'].includes(jk) || k === 'ag:disa') add(4, ['CYB'], 'TS/SCI: defense networks');
+  if(['state', 'fbi', 'shape', 'leg'].includes(jk)) add(3, [], 'Top Secret: interagency post');
+  return out; }
+const clr199has = c => { try{ return isOff() && offClear199().c.has(c); }catch(e){ return false; } };
+let CTX199 = null;
+clLevel = (function(f){ return function(){ try{ if(G && G.player && isOff() && !isPres()){ const mine = typeof clMine === 'function' ? clMine() : null; if(mine && mine.st !== 'active') return 0; const C = offClear199(); let lvl = C.lvl; if(CTX199 && !C.c.has(CTX199)) lvl = Math.min(lvl, 3); return lvl; } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(clLevel);
+clearance = function(){ return clLevel() >= 3; };
+/* the pages check compartments for officers */
+viewCyber = (function(f){ return function(){ if(!(G && isOff())) return f.apply(this, arguments); CTX199 = 'CYB'; try{ let h = f.apply(this, arguments); return h.replace('Your clearance does not grant access. (Ask the DNI or the President for a clearance.)', 'You need a CYBER read-in: it comes with an assignment to Cyber Command, the NSA or a cyber unit.'); } finally { CTX199 = null; } }; })(viewCyber);
+if(typeof viewNuke === 'function') viewNuke = (function(f){ return function(){ if(!(G && isOff())) return f.apply(this, arguments); CTX199 = 'NC2'; try{ return f.apply(this, arguments); } finally { CTX199 = null; } }; })(viewNuke);
+viewIntel = (function(f){ return function(){ if(!(G && isOff())) return f.apply(this, arguments); const v = UI.igV || 'board'; if(v === 'emb' && !clr199has('HCS')) UI.igV = 'board'; if(v === 'cia199' && !clr199has('HCS')) UI.igV = 'board'; let h = f.apply(this, arguments);
+  try{ if(clLevel() >= 4){ if(!clr199has('HCS')) h = h.replace(/<button class="igb[^"]*" data-igv="emb">[^<]*<\/button>/, '');
+    if(clr199has('HCS')){ h = h.replace(/(<div class="igvt">[\s\S]*?)(<\/div>)/, (m, a, b) => a + '<button class="igb' + (UI.igV === 'cia199' ? ' on' : '') + '" data-igv="cia199">CIA files</button>' + b); if(UI.igV === 'cia199'){ const j = h.indexOf('<div class="igvt">'); const k2 = h.indexOf('</div>', j) + 6; if(j >= 0) h = h.slice(0, k2) + ciaFiles199() + '</div>'; } } } }catch(e){ console.error(e); } return h; }; })(viewIntel);
+/* the CIA files: HUMINT reporting, covert action and the officer's own operations */
+function ciaFiles199(){ const I = igEnsure(); const M = offE(); const hum = (I.rep || []).filter(r => r.ag === 'cia').slice(0, 10); const own = (M.hist || []).filter(x => /CIA|covert|sabotage|source|paramilitary|Special Activities/i.test(Array.isArray(x) ? x[1] : (x.txt || x))).slice(0, 10); const cov = (G.cia199 || []).slice(0, 10); const ops = woEnsure().ops.filter(o => o.st === 'active').slice(0, 5);
+  const ban = '<div style="background:#7f1d1d;color:#fff;text-align:center;font:700 11px/1.8 Arial,sans-serif;letter-spacing:.12em">TOP SECRET // HCS-O // NOFORN</div>';
+  const doc = (title, body) => '<div style="background:#fdfcf8;color:#111;border:1px solid #d8d2c4;margin:0 0 10px;font-family:Georgia,serif">' + ban + '<div style="padding:10px 14px"><b>' + title + '</b><div style="font-size:13px;margin-top:4px">' + body + '</div></div>' + ban + '</div>';
+  let h = '<div class="card" style="margin:10px 0;background:#f4f1ea;color:#111"><h3 style="color:#111">CIA files <span class="chip">HCS · Covert Action</span></h3><p class="sm" style="color:#444">Read in through your assignment: ' + esc(M.post.title) + '. Handle as TOP SECRET; nothing leaves the building.</p>';
+  h += doc('Station reporting (human intelligence)', hum.length ? hum.map(r => '<p style="margin:4px 0"><small>' + esc(r.d) + '</small> · ' + esc(r.txt || '') + '</p>').join('') : '<p>No new station reporting this month.</p>');
+  h += doc('Covert action: findings in force', (cov.length ? cov.map(c => '<p style="margin:4px 0"><small>' + esc(c.d) + '</small> · ' + esc(c.t) + '</p>').join('') : '<p>No presidential findings recorded since you were read in.</p>') + (ops.length ? '<p style="margin:6px 0 0"><i>Agency support to active military operations: ' + ops.map(o => 'Operation ' + esc(o.name) + ' (' + Math.round(o.prog || 0) + '%)').join(', ') + '.</i></p>' : ''));
+  h += doc('Your operational record', own.length ? own.map(x => '<p style="margin:4px 0">' + esc(Array.isArray(x) ? x[0] + ' · ' + x[1] : (x.txt || x)) + '</p>').join('') : '<p>No operations on file.</p>');
+  return h + '</div>'; }
+/* CIA activity that ends up in the files */
+const ciaNote199 = t => { G.cia199 = G.cia199 || []; G.cia199.unshift({ d:shortDate(), t }); G.cia199 = G.cia199.slice(0, 20); };
+if(typeof aApply197 === 'function') aApply197 = (function(f){ return function(M, fx, label){ const r = f.apply(this, arguments); try{ if(acat197(M) === 'cia') ciaNote199(label + ': ' + r); }catch(e){} return r; }; })(aApply197);
+if(typeof wApply198 === 'function') wApply198 = (function(f){ return function(M, op, fx, label){ const r = f.apply(this, arguments); try{ if(acat197(M) === 'cia') ciaNote199('Operation ' + op.name + ' — ' + label + ': ' + r); }catch(e){} return r; }; })(wApply198);
+/* the career page: the clearance card */
+offView = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const M = offE(); if(M.out) return h; const C = offClear199(); const card = '<div class="card c199"><h3>Security clearance: ' + esc(CLV[Math.min(4, C.lvl)]) + '</h3><p class="sm" style="margin:4px 0">' + (C.c.size ? [...C.c].map(c => '<span class="chip" title="' + esc(COMP199[c]) + '">' + esc(COMP199[c].split(' — ')[0]) + '</span>').join(' ') : '<span class="muted">No compartments: read-ins come with intelligence, cyber, nuclear, special operations and national-security jobs.</span>') + '</p><p class="muted sm" style="margin:4px 0 0">' + C.why.map(esc).join(' · ') + '. Compartments end when you leave the job.</p><p class="muted sm" style="margin:4px 0 0">Opens: ' + ([C.lvl >= 4 ? 'the National Intelligence Board' : null, C.c.has('CYB') ? 'the Cyber Command operations floor' : null, C.c.has('HCS') ? 'CIA files and the stations' : null, C.c.has('NC2') ? 'nuclear command panels' : null].filter(Boolean).join(', ') || 'unclassified pages only') + '.</p></div>';
+  const at = [h.indexOf('<div class="card w198"'), h.indexOf('<div class="card a197">'), h.indexOf('<div class="g2">')].filter(x => x >= 0); const i = at.length ? Math.min.apply(null, at) : -1; h = i >= 0 ? h.slice(0, i) + card + h.slice(i) : h + card; }catch(e){ console.error(e); } return h; }; })(offView);
+
 boot();
 </script>
 </body></html>
