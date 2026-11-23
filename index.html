@@ -25128,7 +25128,7 @@ awBadges = (function(f){ return function(quiet){ const r = f.apply(this, argumen
 function sleevePatch(M){ if(!['army', 'ussf'].includes(M.svc)) return null; const S = id => id && SEAL['ORB_' + String(id).toUpperCase()]; const own = M.unit ? (S(M.unit) || orbChain(M.unit).map(S).filter(Boolean).slice(-1)[0]) : null; if(M.svc === 'ussf') return own || (typeof BADGEIMG !== 'undefined' && BADGEIMG.ussfp ? BADGEIMG.ussfp[0] : SEAL.USSF); return own || SEAL.ARMY; }
 function sleeveSVG(side){ const M = awE(); const U = UNIF[M.svc] || UNIF.army; const left = side === 'L'; const tabs = []; const army = M.svc === 'army';
   if(left && army && (M.bd || []).includes('ranger')) tabs.push(['RANGER', '#111', '#f2c230']); const chain = [M.unit, M.home].concat(M.unit ? orbChain(M.unit) : []).filter(Boolean);
-  const lastWar = (M.deps || []).filter(d => d.op).slice(-1)[0]; const patch = left ? sleevePatch(M) : (army && lastWar ? (SEAL['ORB_' + String(lastWar.unit).toUpperCase()] || (orbChain(lastWar.unit).map(id => SEAL['ORB_' + id.toUpperCase()]).filter(Boolean).slice(-1)[0])) : null);
+  const lastWar = (M.deps || []).filter(d => d.op).slice(-1)[0]; const patch = left ? sleevePatch(M) : (army && lastWar ? ssiFor(lastWar.unit) : null);
   let s = '<svg viewBox="0 0 200 420" class="slv169" role="img" aria-label="' + (left ? 'Left' : 'Right') + ' sleeve">'; s += '<rect width="200" height="420" fill="var(--bg2,#eef1f5)"/>';
   s += '<defs><linearGradient id="sl' + side + '" x1="0" x2="1"><stop offset="0" stop-color="' + U.coat2 + '"/><stop offset=".55" stop-color="' + U.coat + '"/><stop offset="1" stop-color="' + U.coat2 + '"/></linearGradient></defs>';
   s += '<path d="M40 30 C70 8 130 8 160 30 L168 400 L32 400 Z" fill="url(#sl' + side + ')"/><path d="M40 30 C70 8 130 8 160 30" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"/>';
@@ -25353,6 +25353,28 @@ sleeveSVG = (function(f){ return function(side){ let h = f.apply(this, arguments
   /* drop what the earlier sleeve drew for tabs, then stack the tabs and push the patch below them */ h = h.replace(/<image href="[^"]+" x="56" y="\d+(\.\d+)?" width="88" height="[^"]+"\/>/, '').replace(/<rect x="58" y="\d+" width="84" height="16"[^>]*\/><text[^>]*>RANGER<\/text>/, '');
   let y = 44; const parts = tabs.map(t => { const I = TABIMG[t]; const w = 80, hh = w*I[2]/I[1]; const s = '<image href="' + I[0] + '" x="' + (100 - w/2) + '" y="' + y + '" width="' + w + '" height="' + hh + '"/>'; y += hh + 2; return s; }).join('');
   h = h.replace(/(<image href="[^"]+" x="55" y=")([\d.]+)(" width="90" height="90")/, (m, a, yy, b) => a + (y + 2) + b).replace('</svg>', parts + '</svg>'); }catch(e){ console.error(e); } return h; }; })(sleeveSVG);
+
+/* ===== v185 · Shoulder sleeve insignia as the Army wears them (AR 670-1, ch. 21):
+   - the patch is the SSI of the unit's own headquarters that has one: a battalion wears its division's or separate brigade's patch;
+   - round seals and crests (the Department of the Army seal, the USASOC and INSCOM crests, the 902nd MI seal, the ISA seal) are not
+     sleeve insignia and are never worn on the sleeve;
+   - Army special operations: soldiers of USASOC headquarters, the 160th SOAR and units under JSOC wear the USASOC SSI (the red
+     spearhead with its Airborne tab); the 75th Ranger Regiment and the 1st Special Forces Command (SF groups, PSYOP, Civil Affairs)
+     have patches of their own, not in the game yet, so nothing is drawn rather than a wrong patch;
+   - a unit whose own patch is not in the game shows none: the game never borrows a higher command's patch for a division or a separate brigade;
+   - officers on a joint or Army staff with no unit patch available wear none here;
+   - the Space Force, Navy, Marine Corps and Air Force service coats carry no unit patches. ===== */
+const NOT_SSI = ['army', 'usasoc', 'inscom', '902mi', 'isa', 'jsoc', 'socom'];
+const SSI_ALIAS = { usasoc:'delta', '160soar':'delta', isa:'delta', jsoc:'delta' };
+const SSI_OWN_MISSING = ['75rgr', '1sfc'];
+function ssiLadder(id){ const all = [id].concat(orbChain(id).slice().reverse()); const out = []; for(const x of all){ out.push(x); const o = ORB[x]; if(!o) break; const par = o.p && ORB[o.p]; if(['div', 'corps', 'mef', 'army', 'svc'].includes(o.e)) break; if(['bde', 'grp', 'wing'].includes(o.e) && !(par && par.e === 'div') && !SSI_ALIAS[x]) break; } return out; }
+function ssiFor(id){ if(!id || !ORB[id]) return null; const ladder = ssiLadder(id); for(const x of ladder){ if(SSI_OWN_MISSING.includes(x)) return null; if(SSI_ALIAS[x] && SEAL['ORB_' + SSI_ALIAS[x].toUpperCase()]) return SEAL['ORB_' + SSI_ALIAS[x].toUpperCase()]; if(NOT_SSI.includes(x)) continue; const s = SEAL['ORB_' + String(x).toUpperCase()]; if(s) return s; } return null; }
+function ssiId(id){ if(!id || !ORB[id]) return null; const ladder = ssiLadder(id); for(const x of ladder){ if(SSI_OWN_MISSING.includes(x)) return null; if(SSI_ALIAS[x]) return SSI_ALIAS[x]; if(NOT_SSI.includes(x)) continue; if(SEAL['ORB_' + String(x).toUpperCase()]) return x; } return null; }
+sleevePatch = function(M){ if(M.svc !== 'army') return null; return ssiFor(M.unit) || ssiFor(M.home); };
+TAB_IN_PATCH.push('delta');
+/* unit tabs are part of the patch: none without a patch, none when the patch image already carries its tab */
+unitTabs = (function(f){ return function(M){ const sid = ssiId(M.unit) || ssiId(M.home); if(!sid || TAB_IN_PATCH.includes(sid)) return []; return f.apply(this, arguments); }; })(unitTabs);
+sleeveSVG = (function(f){ return function(side){ let h = f.apply(this, arguments); try{ const M = awE(); if(M.svc === 'ussf') h = h.replace(/· [^<]*<\/figcaption>/, '· ' + (side === 'L' ? 'No unit patches on the Space Force service dress coat' : 'Plain sleeve') + '</figcaption>'); else if(M.svc === 'army' && side === 'L' && !sleevePatch(M)) h = h.replace(/· [^<]*<\/figcaption>/, '· No shoulder sleeve insignia for this assignment in the game yet</figcaption>'); }catch(e){} return h; }; })(sleeveSVG);
 
 boot();
 </script>
