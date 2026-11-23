@@ -26470,7 +26470,7 @@ offView = (function(f){ return function(){ let h = f.apply(this, arguments); try
       shows its badge right away. ===== */
 
 /* 1. the authority behind each award */
-const AWAUTH200 = (id) => ['dic', 'istar', 'dim', 'cim', 'icom'].includes(id) ? 'cia' : ['nidsm', 'nissm', 'nieam', 'nimuc'].includes(id) ? 'dni' : ['ddsm', 'dssm', 'dmsm', 'jscm', 'jsam', 'jmua'].includes(id) ? 'dod' : id === 'pmof' ? 'wh' : ['nato', 'natomsm'].includes(id) ? 'nato' : null;
+var AWAUTH200 = (id) => ['dic', 'istar', 'dim', 'cim', 'icom'].includes(id) ? 'cia' : ['nidsm', 'nissm', 'nieam', 'nimuc'].includes(id) ? 'dni' : ['ddsm', 'dssm', 'dmsm', 'jscm', 'jsam', 'jmua'].includes(id) ? 'dod' : id === 'pmof' ? 'wh' : ['nato', 'natomsm'].includes(id) ? 'nato' : null;
 offDocHTML = (function(f){ return function(d){ const au = d && d.k === 'award' ? AWAUTH200(d.aw) : null; if(!au) return f.apply(this, arguments); const pl = P(); const M = offE(); const A = AWD[d.aw]; const dt = (1 + Math.floor(orbH(d.id)*27)) + ' ' + ORBMON[(d.m || 1) - 1] + ' ' + d.y; const who = offRank(d.g) + ' ' + pl.name; const her = pl.gen === 'F';
   const H = { cia:['CIA', 'CENTRAL INTELLIGENCE AGENCY', 'Washington, D.C. 20505', 'FOR THE DIRECTOR OF THE CENTRAL INTELLIGENCE AGENCY:', 'SECRET//NOFORN'], dni:['DNI', 'OFFICE OF THE DIRECTOR OF NATIONAL INTELLIGENCE', 'Washington, D.C. 20511', 'DIRECTOR OF NATIONAL INTELLIGENCE', 'UNCLASSIFIED'], dod:['DEF', 'DEPARTMENT OF DEFENSE', 'Washington, D.C. 20301', 'FOR THE SECRETARY OF DEFENSE:', 'UNCLASSIFIED'], wh:['POTUS', 'THE WHITE HOUSE', 'WASHINGTON', 'PRESIDENT OF THE UNITED STATES', 'UNCLASSIFIED'], nato:['NATOLOGO', 'NORTH ATLANTIC TREATY ORGANIZATION', 'Brussels, Belgium', 'SECRETARY GENERAL', 'NATO UNCLASSIFIED'] }[au];
   const banner = H[4] !== 'UNCLASSIFIED' && H[4] !== 'NATO UNCLASSIFIED' ? '<div style="text-align:center;font:700 11px Arial,sans-serif;color:#b91c1c;letter-spacing:.12em;margin:-8px 0 10px">' + H[4] + '</div>' : '';
@@ -26524,6 +26524,70 @@ offAssign = (function(f){ return function(g, why){ try{ const M = offE(); const 
 
 /* 5. badges re-checked every month */
 offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()) awBadges(true); }catch(e){} return r; }; })(offMonth);
+
+/* ===== v201 · More decorations from across the government, and performance that really matters.
+   Decorations (from the list of U.S. government awards; worn ones follow the Navy and Air Force lists of non-military
+   decorations authorized for wear, placed after unit awards):
+   - worn: National Security Medal, Gold and Silver Lifesaving Medals, National Intelligence Medal of Achievement, NASA
+     Distinguished Service Medal, NASA Space Flight Medal, NASA Exceptional Bravery Medal, NASA Exceptional Service Medal;
+   - kept in the record but not worn on the uniform: National Intelligence Cross and Medal for Valor, Intelligence Community
+     Expeditionary Service Medal, NRO Distinguished Service Medal (the NRO “Gold Medal”), State Department Superior and Meritorious
+     Honor Awards, Secretary of Defense Medal for Outstanding Public Service, DoD Medal for Distinguished Public Service,
+     Congressional Gold Medal. Stripes marked approx. are drawn from descriptions; exact images can replace them (RIBIMG).
+   Performance: a rolling performance record decides the officer's standing. Top performers ("top 1 percent") get real benefits —
+   better odds at every board and selection, below-the-zone and double below-the-zone promotion, guaranteed command, a stronger
+   end-of-tour decoration, extra political capital each month. Poor performers can be relieved of duty. ===== */
+if(typeof RC_ !== 'undefined' && !RC_.Si) RC_.Si = '#c0c4cc';
+Object.assign(AWD, {
+  nsm:[23.33, 'National Security Medal', sym([['B', 10], ['W', 6], ['Gd', 8]], 'B')] /* approx. */,
+  glsm:[23.36, 'Gold Lifesaving Medal', sym([['W', 6], ['R', 10], ['W', 6]], 'Gd')] /* approx. */,
+  slsm:[23.37, 'Silver Lifesaving Medal', sym([['W', 6], ['B', 10], ['W', 6]], 'Si')] /* approx. */,
+  niam:[23.42, 'National Intelligence Medal of Achievement', sym([['B', 8], ['W', 20], ['B', 4]], 'Gd')] /* approx. */,
+  nasadsm:[23.5, 'NASA Distinguished Service Medal', sym([['B', 30]], 'W')] /* approx. */,
+  nasasfm:[23.51, 'NASA Space Flight Medal', sym([['B', 14], ['W', 4], ['R', 6]], 'W')] /* approx. */,
+  nasabrav:[23.515, 'NASA Exceptional Bravery Medal', sym([['R', 14], ['W', 6]], 'B')] /* approx. */,
+  nasaesm:[23.52, 'NASA Exceptional Service Medal', sym([['B', 16], ['W', 8]], 'B')] /* approx. */,
+  nicross:[80, 'National Intelligence Cross', sym([['B', 30]], 'R')], nimv:[81, 'National Intelligence Medal for Valor', sym([['B', 26], ['W', 4]], 'R')], icesm:[82, 'Intelligence Community Expeditionary Service Medal', sym([['Bk', 10], ['Gd', 10]], 'B')],
+  nrodsm:[83, 'NRO Distinguished Service Medal (Gold Medal)', sym([['B', 24]], 'Gd')], stsha:[84, 'State Department Superior Honor Award', sym([['B', 24]], 'W')], stmha:[85, 'State Department Meritorious Honor Award', sym([['G', 24]], 'W')],
+  sdops:[86, 'Secretary of Defense Medal for Outstanding Public Service', sym([['B', 20]], 'W')], dodps:[87, 'DoD Medal for Distinguished Public Service', sym([['B', 24]], 'Gd')], cgm:[88, 'Congressional Gold Medal', sym([['Gd', 30]], 'Gd')]
+});
+['nicross', 'nimv', 'icesm', 'nrodsm', 'stsha', 'stmha', 'sdops', 'dodps', 'cgm'].forEach(k => { AWD[k].nw = 1; });
+if(typeof AWAUTH200 === 'function') AWAUTH200 = (function(f){ return function(id){ if(['nicross', 'nimv', 'icesm', 'niam'].includes(id)) return 'dni'; if(['nsm', 'cgm'].includes(id)) return 'wh'; if(['sdops', 'dodps'].includes(id)) return 'dod'; return f.apply(this, arguments); }; })(AWAUTH200);
+
+/* who gets them: at the end of a tour, from spaceflight, from rescues */
+awTourEnd = (function(f){ return function(){ const M = awE(); const k = (M.post && M.post.k) || ''; const tour = M.tour || 0; const g = M.g; const good = M.score >= 70; const great = M.score >= 85; const r = f.apply(this, arguments);
+  try{ if(tour < 10) return r; const t = M.post && M.post.title || '';
+    if(/nro/.test(k) && good) award('nrodsm', t);
+    if(/^(ic:|jx:(cia|nsa|nga|nro|dia|odni|nctc|dao))|^dia$/.test(k)){ if(great && g >= 8 && r161() < 0.15) award('nsm', 'exceptionally meritorious service in the intelligence field'); else if(good && r161() < 0.3) award('niam', t); }
+    if(/jx:(dao|state)/.test(k)) award(good ? 'stsha' : 'stmha', t);
+    if(/^osd:|jx:osd/.test(k) && g >= 6 && good) award('sdops', t);
+    if(/^jcs:(cjcs|vcjcs)/.test(k) && great) award('dodps', t);
+    if(k === 'jx:nasa'){ if(good) award('nasaesm', t); if((M.nasa197 || 0) >= 2 && great) award('nasadsm', t); } }catch(e){ console.error(e); } return r; }; })(awTourEnd);
+if(typeof aApply197 === 'function') aApply197 = (function(f){ return function(M, fx, label){ const before = M.nasa197 || 0; const r = f.apply(this, arguments); try{ if((M.nasa197 || 0) > before){ award('nasasfm', 'spaceflight aboard the International Space Station'); if(r161() < 0.1) award('nasabrav', 'an emergency on orbit handled with courage'); } }catch(e){} return r; }; })(aApply197);
+if(typeof wApply198 === 'function') wApply198 = (function(f){ return function(M, op, fx, label){ const r = f.apply(this, arguments); try{ const c = acat197(M); if(c === 'cia' || c === 'intel' || c === 'nsa'){ if(!M.icesm201){ M.icesm201 = 1; award('icesm', 'intelligence support to Operation ' + op.name); } if(fx.risk && fx.prog >= 4 && r161() < 0.05) award(r161() < 0.3 ? 'nicross' : 'nimv', 'valor on a classified mission'); } }catch(e){} return r; }; })(wApply198);
+
+/* ---------- performance standing ---------- */
+function perf201(M){ M = M || offE(); const h = M.perfH || []; const avg = h.length ? h.reduce((a, b) => a + b, 0)/h.length : M.score;
+  const top = M.score >= 82 && avg >= 80 && h.length >= 4 && M.climate >= 50; const strong = !top && M.score >= 70 && avg >= 68; const weak = M.score < 40 || avg < 42; return { avg:Math.round(avg), lvl:top ? 'top' : strong ? 'strong' : weak ? 'weak' : 'avg' }; }
+const PERFL201 = { top:['Top 1% · a rising star', '#047857'], strong:['Above most peers', '#1d4ed8'], avg:['Middle of the pack', '#6b7280'], weak:['Below standard', '#b91c1c'] };
+offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()){ const M = offE(); if(M.out) return r; M.perfH = (M.perfH || []).concat([Math.round(M.score)]).slice(-12); const S = perf201(M);
+  if(S.lvl === 'top'){ if(!M.prod201){ M.prod201 = true; offHist('Rated in the top 1 percent of officers of the same grade.'); notify(P().name + ' is rated among the top officers in the service: a rising star.', 'good'); } P().pc = Math.min(99, (P().pc || 0) + 1); if(M.g >= 5) M.cmd6 = true; }
+  else if(M.prod201){ M.prod201 = false; offHist('No longer rated in the top 1 percent.'); }
+  if(S.lvl === 'weak' && M.unit && ORB[M.unit] && r161() < 0.05){ M.relieved201 = (M.relieved201 || 0) + 1; offHist('Relieved of duty for loss of confidence in the ability to command.'); notify(P().name + ' is relieved of duty: the commander has lost confidence.', 'bad'); M.score = clamp(M.score - 6, 0, 100); offAssign(M.g, 'Relieved of duty'); } } }catch(e){ console.error(e); } return r; }; })(offMonth);
+/* the boards and selections see the record */
+const boost201 = (fn) => function(){ const M = isOff() ? offE() : null; const b = M && M.prod201 ? 10 : M && perf201(M).lvl === 'strong' ? 4 : 0; if(b) M.score += b; try{ return fn.apply(this, arguments); } finally { if(b) M.score -= b; } };
+offSelect = boost201(offSelect); if(typeof jobStep189 === 'function') jobStep189 = boost201(jobStep189);
+offBoards = (function(f){ return function(M){ if(!(M && M.prod201 && G.m === 10)) return f.apply(this, arguments); const b = 8, t = 12; M.score += b; M.tig += t; try{ return f.apply(this, arguments); } finally { M.score -= b; M.tig = Math.max(0, M.tig - t); } }; })(offBoards);
+/* a top performer's end-of-tour decoration is one step higher */
+const UPG201 = { ach:'com', com:'msm', jsam:'jscm', jscm:'dmsm', msm:'lom', dmsm:'dssm' };
+award = (function(f){ return function(k, why, opts){ try{ if(isOff() && offE().prod201 && /^end of tour/.test(why || '') && UPG201[k]){ const g = offE().g; const up = UPG201[k]; if(!((up === 'lom' && g < 5) || (up === 'dssm' && g < 6))){ return f.call(this, up, why + ' (top-performer upgrade)', opts); } } }catch(e){} return f.apply(this, arguments); }; })(award);
+/* the career page shows the standing and what it brings */
+offView = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const M = offE(); if(M.out) return h; const S = perf201(M); const L = PERFL201[S.lvl];
+  const ben = S.lvl === 'top' ? ['better odds at every promotion board and selection (+10 on your record)', 'below-the-zone promotion, even two years early', 'guaranteed command selection', 'end-of-tour decoration one step higher', '+1 political capital every month'] : S.lvl === 'strong' ? ['better odds at selections (+4 on your record)', 'keep it up for four months at 82+ to be rated top 1%'] : S.lvl === 'weak' ? ['promotion odds fall sharply', 'risk of being relieved of duty each month in a command'] : ['reach 70 for an edge at selections; 82+ for four months for top-1% benefits'];
+  const card = '<div class="card p201" style="border-left:4px solid ' + L[1] + '"><h3>Performance standing: <span style="color:' + L[1] + '">' + esc(L[0]) + '</span></h3><p class="sm" style="margin:4px 0">Current ' + Math.round(M.score) + ' · 12-month average ' + S.avg + ' · command climate ' + Math.round(M.climate) + (M.relieved201 ? ' · relieved of duty ' + M.relieved201 + '×' : '') + '</p><ul class="sm" style="margin:4px 0 0 18px">' + ben.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul></div>';
+  const at = [h.indexOf('<div class="card c199">'), h.indexOf('<div class="card w198"'), h.indexOf('<div class="card a197">'), h.indexOf('<div class="g2">')].filter(x => x >= 0); const i = at.length ? Math.min.apply(null, at) : -1; h = i >= 0 ? h.slice(0, i) + card + h.slice(i) : h + card; }catch(e){ console.error(e); } return h; }; })(offView);
+/* rescues: lifesaving medals (disasters, floods, at sea) */
+offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()){ const M = offE(); const disaster = M.sad || (M.dep && /disaster|flood|hurricane|humanitarian/i.test(M.dep.op || '')); if(r161() < (disaster ? 0.05 : 0.004)){ const gold = r161() < 0.3; award(gold ? 'glsm' : 'slsm', (gold ? 'extreme and heroic daring' : 'heroism') + ' rescuing people from the water'); notify(P().name + ' pulls people from the water and is awarded the ' + (gold ? 'Gold' : 'Silver') + ' Lifesaving Medal.', 'good'); } } }catch(e){} return r; }; })(offMonth);
 
 boot();
 </script>
