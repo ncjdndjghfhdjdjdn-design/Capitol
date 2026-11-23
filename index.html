@@ -25215,13 +25215,15 @@ unifSVG = function(){ const M = awE(); const pl = P(); const U = UNIF[M.svc] || 
   if(below.length){ const y0 = bottom + 0.25*UIN + (pocket ? 0.15*UIN : 0); if(sv === 'usmc' && below.length > 1){ below.forEach((k, i) => { const h = bdgHeight(k); put(k, cxL + (i - (below.length - 1)/2)*1.7*UIN, y0 + h/2, 1); }); } else { const k = below[0]; const h = bdgHeight(k); put(k, cxL, y0 + h/2, 1); } }
   if(flap.length && pocket){ /* AR 670-1: at most five combat and special skill badges, three above the ribbons and two on the pocket flap */ flap.slice(0, 2).forEach((k, i) => { const h = bdgHeight(k); put(k, cxL + (i - (Math.min(flap.length, 2) - 1)/2)*1.9*UIN, flapY + 0.25*UIN + h/2, 1); }); }
   /* Navy command insignia on the right breast, centered 1/4 in above the nameplate */ cmdPin.slice(0, 1).forEach(k => { const h = bdgHeight(k); put(k, cxR, nameY - 0.25*UIN - h/2, -1); });
-  /* identification badges (AR 670-1 22-17; NAVPERS 15665I 5101; DAFI 36-2903 4.9): Army, Marine Corps and Navy wear them centered on the breast pocket between the point of the flap and the bottom of the pocket, the Joint Chiefs and OSD badges on the left, the Presidential and Vice Presidential Service Badges on the right (the position of honor). Air Force: the first 1 1/2 in below the top of the welt pocket, a second on the right 1 1/2 in below the nameplate; the Missile Badge takes the left side and moves the other badge to the right. */
-  const psb = ident.filter(k => k === 'psb' || k === 'vpsb').slice(0, 1); let idb = ident.filter(k => k !== 'psb' && k !== 'vpsb'); const msl = breast.filter(k => /^(s|m)?missile$/.test(k)).slice(0, 1);
-  const pkC = (pocket && !welt ? flapY + 4.3*UIN : bottom + 4.1*UIN); /* center of the pocket below the flap point */
-  const slotL = h => welt ? flapY + 1.5*UIN + h/2 : pkC, slotR = h => welt ? nameY + UIN + 1.5*UIN + h/2 : pkC;
-  const right = [], left = []; psb.forEach(k => right.push(k)); msl.forEach(k => left.push(k));
-  idb.forEach(k => { if(!left.length) left.push(k); else if(!right.length) right.push(k); }); idb = [];
-  left.slice(0, 1).forEach(k => { const h = bdgHeight(k); put(k, cxL, slotL(h), 1); }); right.slice(0, 1).forEach(k => { const h = bdgHeight(k); put(k, cxR, slotR(h), 1); });
+  /* identification badges (AR 670-1 22-17; NAVPERS 15665I 5101; DAFI 36-2903 4.9), as senior officers wear them in their official portraits:
+     the wearer's left pocket carries the permanent staff badges (Joint Chiefs of Staff, Office of the Secretary of Defense, Army Staff, Air Staff, Space Staff, National Guard Bureau); the right pocket — the position of honor — carries the Presidential or Vice Presidential Service Badge and the badges of the current assignment (combatant command, Cyber Command, NSA, DIA, NRO), side by side. Two badges fit across a pocket; more go in a second row below. Army, Marine Corps and Navy: centered between the point of the flap and the bottom of the pocket. Air Force: 1 1/2 in below the top of the welt pocket on the left and 1 1/2 in below the nameplate on the right; the Missile Badge leads the left side. */
+  const PERM = ['jcsid', 'osdid', 'arstaff', 'hafid', 'ssid', 'ngid']; const msl = breast.filter(k => /^(s|m)?missile$/.test(k)).slice(0, 1);
+  const hon = ident.filter(k => k === 'psb' || k === 'vpsb'); const perm = ident.filter(k => PERM.includes(k)); const temp = ident.filter(k => !hon.includes(k) && !perm.includes(k));
+  let left = msl.concat(perm), right = hon.concat(temp); let idb = [];
+  /* keep the two pockets balanced when one side is empty */ if(!right.length && left.length > 1 + msl.length) right = left.splice(msl.length ? 1 : 1, 1); if(!left.length && right.length > 2) left = right.splice(right.length - 1, 1);
+  const pk0 = pocket && !welt ? flapY + 3.2*UIN : bottom + 3.0*UIN; /* top of the badge area on the pocket */
+  const grid = (list, cx, top) => { let y = top; for(let r = 0; r*2 < list.length; r++){ const row = list.slice(r*2, r*2 + 2); const hh = Math.max.apply(null, row.map(bdgHeight)); const ww = row.map(bdgWidth); const gap = 0.25*UIN; const tot = ww.reduce((a, b) => a + b, 0) + (row.length - 1)*gap; let x = cx - tot/2; row.forEach((k, i) => { put(k, x + ww[i]/2, y + hh/2, 1); x += ww[i] + gap; }); y += hh + 0.3*UIN; } };
+  grid(left, cxL, welt ? flapY + 1.5*UIN : pk0); grid(right, cxR, welt ? nameY + UIN + 1.5*UIN : pk0);
   let col = collarIns(M, sv);
   return s + lap + col + '</svg>'; };
 
@@ -26588,6 +26590,32 @@ offView = (function(f){ return function(){ let h = f.apply(this, arguments); try
   const at = [h.indexOf('<div class="card c199">'), h.indexOf('<div class="card w198"'), h.indexOf('<div class="card a197">'), h.indexOf('<div class="g2">')].filter(x => x >= 0); const i = at.length ? Math.min.apply(null, at) : -1; h = i >= 0 ? h.slice(0, i) + card + h.slice(i) : h + card; }catch(e){ console.error(e); } return h; }; })(offView);
 /* rescues: lifesaving medals (disasters, floods, at sea) */
 offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()){ const M = offE(); const disaster = M.sad || (M.dep && /disaster|flood|hurricane|humanitarian/i.test(M.dep.op || '')); if(r161() < (disaster ? 0.05 : 0.004)){ const gold = r161() < 0.3; award(gold ? 'glsm' : 'slsm', (gold ? 'extreme and heroic daring' : 'heroism') + ' rescuing people from the water'); notify(P().name + ' pulls people from the water and is awarded the ' + (gold ? 'Gold' : 'Silver') + ' Lifesaving Medal.', 'good'); } } }catch(e){} return r; }; })(offMonth);
+
+/* ===== v202 · Agency directors run their agencies on the existing boards.
+   - National Intelligence Board: the Director of NSA (the Cyber Command commander, dual-hatted), the Director of NGA, the
+     Principal Deputy Director of the NRO and the Director of DIA can move their agency's collectors across the map, like a
+     cabinet secretary over their own agency. Priorities for the whole community stay with the President and the DNI.
+   - Cyber Command Joint Operations Center: the Commander of U.S. Cyber Command deploys protection teams, sends national
+     mission teams to hunt forward, prepares operations and executes them under delegated authority (NSPM-13), deploys and
+     recalls electronic-warfare forces and aborts operations. Public attribution (the DNI), sanctions (Treasury), retaliation
+     and kinetic strikes remain the President's. Officers commanding a cyber unit (colonel and above) can deploy protection
+     teams and hunt forward. ===== */
+function offAgency202(){ try{ if(!(G && G.player && isOff() && !isPres())) return []; const M = offE(); if(M.out) return []; const k = (M.post && M.post.k) || ''; const o = [];
+  if(k === 'cc:CYBERCOM') o.push('nsa'); if(k === 'ic:nga' || k === 'ag:ngad') o.push('nga'); if(k === 'ic:nro' || k === 'ag:nrodd') o.push('nro'); if(k === 'dia' || k === 'ag:diadi') o.push('dia'); return o; }catch(e){ return []; } }
+igCanAg = (function(f){ return function(a){ if(offAgency202().includes(a)) return true; return f.apply(this, arguments); }; })(igCanAg);
+viewIntel = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const A = offAgency202(); if(A.length) h = h.replace(' · observer</span>', ' · you direct the ' + A.map(a => (IGAI[a] || [0, a.toUpperCase()])[1]).join(' and ') + ' — move its collectors in the table below</span>'); }catch(e){} return h; }; })(viewIntel);
+/* Cyber Command authority */
+function cyAuth202(){ try{ if(!(G && G.player && isOff() && !isPres())) return null; const M = offE(); if(M.out) return null; const k = (M.post && M.post.k) || ''; if(k === 'cc:CYBERCOM') return 'cmd'; const ch = M.unit && ORB[M.unit] ? [M.unit].concat(orbChain(M.unit)) : []; if(M.g >= 6 && k.startsWith('u:') && ch.some(id => ['cnmf', 'jfhqd', 'arcyber', '16af', '10flt', 'marforcyber', 'md6', 'cpb', '780mi'].includes(id))) return 'unit'; return null; }catch(e){ return null; } }
+const CYCMD202 = ['cydef', 'cyhunt', 'cylaunch', 'cyabort', 'cyexec', 'ewdep', 'ewret'], CYUNIT202 = ['cydef', 'cyhunt'];
+cyAct = (function(f){ return function(a, v){ const au = cyAuth202(); const ok = au === 'cmd' ? CYCMD202 : au === 'unit' ? CYUNIT202 : null; if(!ok || !ok.includes(a)) return f.apply(this, arguments);
+  const was = G.player.role; G.player.role = 'pres'; let r; try{ r = f.apply(this, arguments); } finally { G.player.role = was; }
+  try{ if(r && r.ok && isOff()){ const M = offE(); const lbl = { cydef:'deployed Cyber Protection Teams', cyhunt:'sent a National Mission Team to hunt forward', cylaunch:'began preparing a cyber operation', cyabort:'aborted a cyber operation', cyexec:'executed a cyber operation under delegated authority', ewdep:'deployed electronic-warfare forces', ewret:'recalled electronic-warfare forces' }[a]; if(lbl){ offHist('As ' + M.post.title + ', ' + lbl + '.'); M.score = clamp(M.score + (a === 'cyexec' ? 1.5 : 0.5), 0, 100); } } }catch(e){} return r; }; })(cyAct);
+viewCyber = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const au = cyAuth202(); if(au) h = h.replace(' · observing</span>', au === 'cmd' ? ' · command authority: defense, hunt forward, preparing and executing operations under delegated authority, electronic warfare. Attribution, sanctions, retaliation and strikes stay with the President</span>' : ' · unit authority: deploy protection teams and hunt forward</span>'); }catch(e){} return h; }; })(viewCyber);
+/* the existing caveat system (need-to-know) follows the officer's read-ins too */
+clCav = (function(f){ return function(c){ try{ if(G && G.player && isOff() && !isPres() && typeof offClear199 === 'function'){ const C = offClear199(); const k = (offE().post || {}).k || ''; const has = x => C.c.has(x);
+  const ok = c === 'cyberops' ? has('CYB') : c === 'nc2' ? has('NC2') : c === 'intelops' ? (has('HCS') || has('SI') || has('TK')) : c === 'pdb' ? ['jcs:cjcs', 'jcs:vcjcs', 'cc:CYBERCOM'].includes(k) || /^jx:(nsc|cia)$|^ic:adma$/.test(k) : c === 'nsc' ? ['jcs:cjcs', 'jcs:vcjcs'].includes(k) || k === 'jx:nsc' : c === 'hsc' ? ['jcs:cngb', 'cc:NORTHCOM'].includes(k) : false; if(ok) return true; } }catch(e){} return f.apply(this, arguments); }; })(clCav);
+/* the intelligence leadership panel names the player when the player holds the post */
+if(typeof igHeads === 'function') igHeads = (function(f){ return function(){ const L = f.apply(this, arguments); try{ if(G && isOff()){ const k = (offE().post || {}).k || ''; const nm = offRank(offE().g) + ' ' + P().name; const map = { 'cc:CYBERCOM':/Director, NSA/, 'ic:nga':/Director, NGA/, dia:/Director, DIA/ }; const re = map[k]; if(re) L.forEach(x => { if(re.test(x[1])) x[2] = nm; }); } }catch(e){} return L; }; })(igHeads);
 
 boot();
 </script>
