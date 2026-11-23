@@ -26922,6 +26922,36 @@ if(typeof mlPaper === 'function') mlPaper = (function(f){ return function(){ ret
 (function(){ const P = { usamc:['jmc', 'cecom', 'tacom', 'amcom', 'asc'], usace:ORBK.filter(id => orbChain(id).includes('usace') && / Division$/.test(ORB[id].n)), tradoc:ORBK.filter(id => orbChain(id).includes('tradoc') && /Center of Excellence/.test(ORB[id].n)) };
   Object.keys(P).forEach(p => { if(!SSIIMG[p]) return; P[p].forEach(id => { if(ORB[id] && !SSIIMG[id]) SSIIMG[id] = SSIIMG[p]; }); }); })();
 
+/* ===== v218 · Ribbons redrawn from their official descriptions (widths in 64ths of an inch; a ribbon is 1 3/8 in = 88/64):
+   - Gold Lifesaving Medal (33 CFR 13.01-25): red 3/16, white 1/32, gold 15/16, white 1/32, red 3/16.
+   - Silver Lifesaving Medal (33 CFR 13.01-30): blue 3/16, white 1/32, silver gray 15/16, white 1/32, blue 3/16.
+   - National Security Medal (32 CFR 578.16): dark blue 1/4, gold 3/32, dark blue 11/16 (with gold diagonal lines), gold 3/32, dark blue 1/4.
+   - National Intelligence Medal of Achievement: ultramarine; white 3/32 edges with silver gray 3/16 toward the center; a 1/16 ultramarine
+     center stripe flanked by 3/32 white.
+   - National Intelligence Exceptional Achievement Medal: white; 1/8 silver gray edges with 1/32 white and golden yellow toward the center;
+     in the middle, two 1/4 dark blue stripes around 1/16 white, scarlet and white.
+   - Remote Combat Effects Campaign Medal (AFPC): blue, with a wide light blue center flanked by narrow white stripes.
+   - NASA Space Flight Medal (Naval History and Heritage Command): blue, red, black, red, aquamarine, red, black, red, blue.
+   - NASA Exceptional Bravery Medal: sky blue edges, thin light blue, wide dark blue, thin light blue, red center.
+   - NASA Exceptional Service Medal: sky blue with edge striping of yellow, navy blue and yellow.
+   - NASA Distinguished Service Medal: wide dark blue center flanked by thin light blue, medium blue at the edges.
+   - Nuclear Deterrence Operations Service Medal: blue with red, green and gold stripes near each edge.
+   Where a source gives colors but no widths, widths are proportioned from the official ribbon. The National Intelligence Superior
+   Service Medal has no public description and stays an estimate. ===== */
+Object.assign(RC_, { SkB:'#7fc4ea', LtB:'#b9dcf3', MB:'#2f6db5', Aq:'#3fbfb3', Si:RC_.Si || '#c0c4cc' });
+(function(){ const set = (k, stripes) => { if(AWD[k]) AWD[k][2] = stripes; };
+  set('glsm', sym([['R', 12], ['W', 2]], 'Gd'));
+  set('slsm', sym([['B', 12], ['W', 2]], 'Si'));
+  set('nsm', sym([['NB', 16], ['Gd', 6]], 'NB'));
+  set('niam', sym([['W', 6], ['Si', 12], ['UB', 18], ['W', 6]], 'UB'));
+  set('nieam', sym([['Si', 8], ['W', 2], ['Gd', 2], ['W', 10], ['DB', 16], ['W', 4]], 'Sc'));
+  set('rcecm', sym([['B', 30], ['W', 4]], 'LB'));
+  set('nasasfm', sym([['B', 14], ['R', 3], ['Bk', 10], ['R', 3]], 'Aq'));
+  set('nasabrav', sym([['SkB', 12], ['LtB', 3], ['DB', 22], ['LtB', 3]], 'R'));
+  set('nasaesm', sym([['Y', 3], ['NB', 5], ['Y', 3]], 'SkB'));
+  set('nasadsm', sym([['MB', 14], ['LtB', 4]], 'DB'));
+  set('ndosm', sym([['B', 8], ['Gd', 3], ['G', 3], ['R', 3]], 'B')); })();
+
 boot();
 </script>
 </body></html>
