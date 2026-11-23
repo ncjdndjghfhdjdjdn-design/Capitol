@@ -25195,7 +25195,7 @@ unifSVG = function(){ const M = awE(); const pl = P(); const U = UNIF[M.svc] || 
   if(pocket && !welt){ [cxR, cxL].forEach(cx => { s += '<path d="M' + (cx - pw/2) + ' ' + flapY + ' h' + pw + ' l-3 ' + (1.9*UIN) + ' L' + cx + ' ' + (flapY + 2.3*UIN) + ' L' + (cx - pw/2 + 3) + ' ' + (flapY + 1.9*UIN) + ' Z" fill="' + U.coat2 + '" stroke="rgba(0,0,0,.3)"/><circle cx="' + cx + '" cy="' + (flapY + 1.7*UIN) + '" r="3" fill="' + U.btn + '"/>'; }); }
   /* grade insignia on the shoulder loops (none on Navy service dress blue: the grade is on the sleeves) */ if(!U.sleeve){ s += '<path d="M96 120 L158 102 L160 113 L100 132 Z" fill="' + U.coat2 + '" stroke="rgba(0,0,0,.35)"/><path d="M324 120 L262 102 L260 113 L320 132 Z" fill="' + U.coat2 + '" stroke="rgba(0,0,0,.35)"/>' + '<g transform="rotate(-16.2 128.5 117)">' + rankSVG(M.g, sv, 128.5, 117, 0.9) + '</g><g transform="rotate(16.2 291.5 117)">' + rankSVG(M.g, sv, 291.5, 117, 0.9) + '</g>'; }
   /* nameplate, 3 × 1 in, centered on the right pocket flap (Marines wear none on the service coat) */ if(sv !== 'usmc'){ const ny = nameY; s += '<rect x="' + (cxR - 1.5*UIN) + '" y="' + ny + '" width="' + (3*UIN) + '" height="' + UIN + '" rx="1.5" fill="#111"/><text x="' + cxR + '" y="' + (ny + UIN*0.72) + '" font-size="' + (UIN*0.62) + '" fill="#fff" text-anchor="middle" font-family="Arial" font-weight="700">' + esc(String(pl.name || '').split(' ').slice(-1)[0].toUpperCase()) + '</text>'; }
-  /* ribbons: 1 3/8 × 3/8 in, three to a row, senior top and inboard, the bottom row 1/8 in above the left pocket flap */ const UAW = ['puc', 'jmua', 'vua', 'muc', 'asua']; const unitAw = sv === 'army' ? Object.keys(M.aw).filter(k => UAW.includes(k)).sort((a, b) => AWD[a][0] - AWD[b][0]) : []; const ids = Object.keys(M.aw).filter(k => AWD[k] && !AWD[k].nw && !unitAw.includes(k)).sort((a, b) => AWD[a][0] - AWD[b][0]); const rw = 1.375*UIN, rh = 0.375*UIN, per = 3; const rows = []; for(let i = ids.length; i > 0; i -= per) rows.unshift(ids.slice(Math.max(0, i - per), i)); const bottom = (pocket ? flapY : 224) - 0.125*UIN; let rib = '';
+  /* ribbons: 1 3/8 × 3/8 in, three to a row, senior top and inboard, the bottom row 1/8 in above the left pocket flap */ const UAW = ['puc', 'jmua', 'vua', 'muc', 'asua', 'rokpuc']; const unitAw = sv === 'army' ? Object.keys(M.aw).filter(k => UAW.includes(k)).sort((a, b) => AWD[a][0] - AWD[b][0]) : []; const ids = Object.keys(M.aw).filter(k => AWD[k] && !AWD[k].nw && !unitAw.includes(k)).sort((a, b) => AWD[a][0] - AWD[b][0]); const rw = 1.375*UIN, rh = 0.375*UIN, per = 3; const rows = []; for(let i = ids.length; i > 0; i -= per) rows.unshift(ids.slice(Math.max(0, i - per), i)); const bottom = (pocket ? flapY : 224) - 0.125*UIN; let rib = '';
   rows.forEach((r, ri_) => { const y = bottom - (rows.length - ri_)*rh; const tot = r.length*rw; r.forEach((id, j) => { rib += ribSVG(id, cxL - tot/2 + j*rw, y, rw, rh, M.aw[id], M.awV && M.awV[id], navy); }); }); s += rib;
   /* badges as the regulations place them (DA PAM 670-1; NAVPERS 15665; DAFI 36-2903):
      Army: up to 3 above the ribbons, one above the other in group order from the top (group 1 CIB/CAB, or group 2 EIB/ESB, only one of the two groups; then group 3 parachutist, air assault, aviator), 1/4 in above the ribbons and 1/2 in apart; any more special skill badges go on the left pocket flap.
@@ -27115,6 +27115,128 @@ offBillet = (function(f){ return function(svc, home, g){ const B = f.apply(this,
 /* Air Force and Space Force: an intelligence, cyber or electronic warfare officer sent to a wing keeps the field's own job titles */
 offBillet = (function(f){ return function(svc, home, g){ const B = f.apply(this, arguments); try{ if(!B || !['af', 'ussf'].includes(svc)) return B; const M = P() && P().mil; const F = M ? fldOf(M) : null; if(!F || F.k === 'pil' || !Array.isArray(F.t) || !/^Pilot\b/.test(B.title)) return B;
   const i = Math.min(F.t.length - 1, g <= 2 ? 0 : g === 3 ? 1 : g === 4 ? 2 : 3); const u = ORB[B.unit] ? ORB[B.unit].n : ORB[home] ? ORB[home].n : ''; return Object.assign({}, B, { title:String(F.t[i]).replace('{u}', u).replace('{c}', 'A') }); }catch(e){ return B; } }; })(offBillet);
+
+/* ===== v221 · Bigger ribbon racks: more awards, earned the way they are earned, and fuller citations.
+   New ribbons (stripes from the Air Force Personnel Center fact sheets and medals.org.uk; widths proportioned where the source gives none):
+   Aerial Achievement Medal · Air and Space Organizational Excellence Award · Air and Space Combat Readiness Medal ·
+   Air and Space Expeditionary Service Ribbon · Small Arms Expert Marksmanship Ribbon · Air and Space Training Ribbon ·
+   Air and Space Recognition Ribbon · Navy "E" Ribbon · Navy Arctic Service Ribbon · Navy Expert Rifle Medal ·
+   Fleet Marine Force Ribbon · Navy and Marine Corps Overseas Service Ribbon · Antarctica Service Medal ·
+   NATO Meritorious Service Medal · Republic of Korea Presidential Unit Citation.
+   More awards along the way: achievement and commendation medals during a tour (not only at its end), the Joint Service Achievement
+   Medal on joint staffs, unit awards in good years. Citations name the oak leaf cluster or award number, the period of service and the
+   approving authority. ===== */
+Object.assign(RC_, { BiB:'#4a90d9', NaB:'#004990', MB:RC_.MB || '#2f6db5', LtB:RC_.LtB || '#b9dcf3' });
+Object.assign(AWD, {
+  aam:[14.5, 'Aerial Achievement Medal', sym([['B', 4], ['Gd', 8]], 'BiB')],
+  afoea:[23.15, 'Air and Space Organizational Excellence Award', sym([['B', 6], ['W', 2], ['R', 31], ['W', 2]], 'B')],
+  nbe:[23.6, 'Navy “E” Ribbon', sym([['Gd', 3], ['W', 3]], 'NB')],
+  afcrm:[23.9, 'Air and Space Combat Readiness Medal', sym([['R', 10], ['LB', 5], ['DB', 3], ['LB', 5]], 'R')],
+  antsm:[33.5, 'Antarctica Service Medal', sym([['Bk', 4], ['NB', 8], ['DB', 8], ['UB', 8], ['LB', 8]], 'W')],
+  fmfr:[34.2, 'Fleet Marine Force Ribbon', sym([['NB', 30], ['G', 3], ['Y', 3]], 'R')],
+  nasr:[34.3, 'Navy Arctic Service Ribbon', sym([['MB', 14], ['LB', 8], ['W', 10], ['LB', 6]], 'NB')],
+  nmcosr:[35.1, 'Navy and Marine Corps Overseas Service Ribbon', sym([['LB', 4], ['Y', 3], ['NB', 26], ['Y', 3]], 'R')],
+  afesr:[35.2, 'Air and Space Expeditionary Service Ribbon', sym([['B', 4], ['Sc', 4], ['Y', 4], ['UB', 22], ['W', 2]], 'LB')],
+  afrr:[36.2, 'Air and Space Recognition Ribbon', sym([['R', 4], ['W', 3], ['LB', 34]], 'R')],
+  afsaem:[37.5, 'Small Arms Expert Marksmanship Ribbon', sym([['LB', 16], ['Y', 3]], 'LG')],
+  aftr:[37.9, 'Air and Space Training Ribbon', sym([['DB', 6], ['Y', 6], ['DB', 18]], 'R')],
+  natomsm:[39.5, 'NATO Meritorious Service Medal', sym([['W', 6]], 'NaB')],
+  rokpuc:[39.7, 'Republic of Korea Presidential Unit Citation', sym([['G', 10], ['W', 2], ['R', 2], ['W', 2], ['R', 2], ['W', 2], ['G', 2]], 'W')],
+  nerm:[41, 'Navy Expert Rifle Medal', sym([['NB', 22], ['LG', 3], ['NB', 17]], 'LG')]
+});
+try{ if(typeof UAW !== 'undefined' && Array.isArray(UAW)) ['afoea', 'nbe', 'rokpuc'].forEach(k => { if(!UAW.includes(k)) UAW.push(k); }); }catch(e){}
+
+/* ---------- earning them ---------- */
+const AIRF221 = ['pil', 'abm', 'rpa', 'mdw', 'ew'];
+function awYear221(M){ const F = fldOf(M); const fk = F ? F.k : ''; const sv = M.svc; const k = (M.post && M.post.k) || ''; const t = (M.post && M.post.title) || ''; const u = M.unit && ORB[M.unit]; const where = u ? (u.h || '') + ' ' + orbChain(M.unit).map(id => (ORB[id] || {}).h || '').join(' ') : ''; const has = x => !!M.aw[x]; const good = M.score >= 68;
+  const staff = /^(js:|osd:|ag:|svc:|ccj:|stf:|x220:|jx:|ic:|dia)/.test(k) || /Staff|Headquarters|Office/.test(t);
+  if(sv === 'af' || sv === 'ussf'){ if(!has('aftr')) award('aftr', 'completion of initial training', { quiet:1 }); if(r161() < 0.3 && !has('afsaem')) award('afsaem', 'qualified expert with the M18 pistol and the M4 carbine');
+    if(AIRF221.includes(fk) || fk === 'msl'){ const yos = offYos(M); if(yos >= 2 && (!has('afcrm') || (yos % 4 === 0 && M.afcrm221 !== yos))){ M.afcrm221 = yos; award('afcrm', 'sustained combat readiness in ' + (fk === 'msl' ? 'the ICBM force' : 'an operational flying unit')); } }
+    if(AIRF221.includes(fk) && !M.dep && good && r161() < 0.25) award('aam', 'sustained meritorious achievement in aerial flight');
+    if(staff && good && r161() < 0.3) award('afoea', 'the organization’s exceptionally meritorious service'); if(M.score >= 85 && r161() < 0.04) award('afrr', 'selection for a special trophy or award of the Department of the Air Force'); }
+  if(sv === 'navy'){ if(!has('nerm') && r161() < 0.25) award('nerm', 'qualified expert with the service rifle'); if(u && /ship|sub|ddg|cg|csg|esg|Destroyer|Submarine|USS/i.test(u.n + ' ' + (u.k || '')) && good && r161() < 0.3) award('nbe', 'the command’s Battle Efficiency award');
+    if(fk === 'sub' && r161() < 0.1) award('nasr', 'operations above the Arctic Circle (ICEX)'); if(u && orbChain(M.unit).concat([M.unit]).some(id => /^Marine/.test((ORB[id] || {}).b || '')) && !has('fmfr')) award('fmfr', 'qualification with the Fleet Marine Force'); if(r161() < 0.02) award('antsm', 'support of Operation Deep Freeze'); }
+  if((sv === 'navy' || sv === 'usmc') && /Japan|Okinawa|Korea|Italy|Spain|Bahrain|Germany|Guam|Diego Garcia|Djibouti/.test(where) && (M.tour || 0) >= 12 && M.nmcosr221 !== M.post.k){ M.nmcosr221 = M.post.k; award('nmcosr', 'an overseas tour'); }
+  if(sv === 'af' && /airlift|Air Mobility|Airlift|McChord|Christchurch/i.test(where) && r161() < 0.03) award('antsm', 'airlift for Operation Deep Freeze');
+  if(/Korea|Humphreys|Osan|Kunsan|2nd Infantry Division/.test(where) && !has('rokpuc') && (M.tour || 0) >= 6) award('rokpuc', 'service with a unit cited by the President of the Republic of Korea');
+  if(/^jx:shape|NATO|SHAPE|Allied/.test(k + ' ' + t) && good && r161() < 0.3) award('natomsm', 'exceptional service to the North Atlantic Treaty Organization');
+  /* interim decorations: an achievement or commendation medal during a tour, a joint achievement medal on a joint staff */
+  if(!M.dep && M.score >= 70 && r161() < 0.42) award(M.g >= 4 && r161() < 0.4 ? 'com' : 'ach', ['outstanding achievement during a major training exercise', 'meritorious achievement during an inspection the unit passed with distinction', 'outstanding achievement as officer in charge of a high-visibility project', 'meritorious achievement planning a multinational exercise'][Math.floor(r161()*4)]);
+  if(/^(js:|osd:|ccj:|jx:|dia|ic:)/.test(k) && good && r161() < 0.35) award('jsam', 'meritorious achievement on a joint staff'); }
+offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()){ const M = offE(); if(!M.out && G.m === 10 && M.aw221y !== G.y){ M.aw221y = G.y; awYear221(M); } } }catch(e){ console.error(e); } return r; }; })(offMonth);
+depReturn = (function(f){ return function(M){ const D = M && M.dep; const r = f.apply(this, arguments); try{ if(D && (M.svc === 'af' || M.svc === 'ussf')) award('afesr', 'deployment' + (D.opn ? ' in support of Operation ' + D.opn : ''), { quiet:false }); if(D && D.air && M.svc === 'af' && r161() < 0.5) award('aam', 'aerial achievement in Operation ' + (D.opn || '')); if(D && D.mo >= 4 && M.score >= 65 && r161() < 0.5) award(M.g >= 4 ? 'com' : 'ach', 'meritorious service while deployed' + (D.opn ? ' in Operation ' + D.opn : '')); }catch(e){ console.error(e); } return r; }; })(depReturn);
+/* earlier careers (an officer starting at a senior grade) get a believable rack */
+function backfill221(M){ if(M.bf221) return; M.bf221 = 1; const yos = offYos(M); const sv = M.svc; const F = fldOf(M); const fk = F ? F.k : '';
+  if(sv === 'af' || sv === 'ussf'){ award('aftr', '', { quiet:1 }); if(yos >= 2) award('afsaem', '', { quiet:1 }); if(AIRF221.includes(fk) && yos >= 2) award('afcrm', '', { quiet:1 }); if(yos >= 4) award('afesr', '', { quiet:1 }); if(yos >= 8 && AIRF221.includes(fk)) award('aam', '', { quiet:1 }); if(yos >= 10) award('afoea', '', { quiet:1 }); }
+  if(sv === 'navy'){ award('nerm', '', { quiet:1 }); if(yos >= 4 && fk !== 'avn') award('nbe', '', { quiet:1 }); if(yos >= 6) award('nmcosr', '', { quiet:1 }); }
+  if(sv === 'usmc' && yos >= 4) award('nmcosr', '', { quiet:1 });
+  for(let i = 0; i < Math.floor(yos/5); i++){ award(i % 2 ? 'com' : 'ach', '', { quiet:1 }); } if(yos >= 12 && M.g >= 5) award('jsam', '', { quiet:1 }); }
+offMonth = (function(f){ return function(){ try{ if(isOff() && !offE().out) backfill221(offE()); }catch(e){} return f.apply(this, arguments); }; })(offMonth);
+
+/* ---------- citations: award number, period, authority ---------- */
+award = (function(f){ return function(k, why, opts){ const r = f.apply(this, arguments); try{ if(isOff() && !(opts && opts.quiet)){ const M = offE(); const id = awK(k, M.svc) || k; const d = (M.docs || []).find(x => x.k === 'award' && x.aw === id && x.n221 == null); if(d){ d.n221 = M.aw[id] || 1; d.from221 = M.tourT221 != null && M.tourT221 < G.turn ? M.tourT221 : G.turn - Math.max(1, M.tour || 12); d.to221 = G.turn; d.sig221 = newName(gen()); } } }catch(e){} return r; }; })(award);
+offAssign = (function(f){ return function(){ const r = f.apply(this, arguments); try{ offE().tourT221 = G.turn; }catch(e){} return r; }; })(offAssign);
+const ORDW221 = ['', 'FIRST', 'SECOND', 'THIRD', 'FOURTH', 'FIFTH', 'SIXTH', 'SEVENTH', 'EIGHTH', 'NINTH', 'TENTH'];
+function turnDate221(t){ let y = G.y, m = G.m - (G.turn - t); while(m < 1){ m += 12; y--; } return (1 + Math.floor(orbH('d' + t)*27)) + ' ' + ORBMON[m - 1] + ' ' + y; }
+offDocHTML = (function(f){ return function(d){ let h = f.apply(this, arguments); try{ if(!d || d.k !== 'award' || !AWD[d.aw] || !d.n221) return h; const M = offE(); const pl = P(); const n = d.n221; const A = AWD[d.aw]; const navy = M.svc === 'navy' || M.svc === 'usmc';
+  const dev = n >= 2 ? (navy ? '(' + (ORDW221[n] || n + 'TH') + ' AWARD)' : '(' + (ORDW221[n - 1] || (n - 1) + 'TH') + ' OAK LEAF CLUSTER)') : '';
+  if(dev) h = h.replace(esc(A[1].toUpperCase()), esc(A[1].toUpperCase()) + '<br>' + dev);
+  const her = pl.gen === 'F'; const tier = A[0] <= 7 ? 3 : A[0] <= 13 ? 2 : A[0] <= 19 ? 1 : 0;
+  const extra = ['', ' Through ' + (her ? 'her' : 'his') + ' initiative and professional skill, the unit met every mission on time and to standard.', ' ' + (her ? 'Her' : 'His') + ' leadership, sound judgment and tireless devotion to duty were instrumental in the success of every mission the command was assigned, and set the standard for officers of every grade.', ' ' + (her ? 'Her' : 'His') + ' vision and strategic leadership shaped the readiness of the force, and the results of ' + (her ? 'her' : 'his') + ' work will be felt for years to come.'][tier];
+  const period = d.from221 != null && d.to221 != null ? ' during the period ' + turnDate221(d.from221) + ' to ' + turnDate221(d.to221) : '';
+  h = h.replace(/exceptionally meritorious service while serving as /, (tier >= 2 ? 'exceptionally meritorious service' : tier === 1 ? 'meritorious service' : 'meritorious achievement') + period + ' while serving as ').replace(/\. (Her|His) actions reflect great credit/, '.' + extra + ' $1 actions reflect great credit');
+  const auth = { 3:'Chief of Staff', 2:'Commanding General', 1:'Commander', 0:'Commander' }[tier]; h = h.replace(/(<p style="margin-top:28px">FOR THE [^<]*:<\/p>)/, '$1<p style="margin:2px 0 0;font-size:12px">' + esc(offRank(Math.min(10, Math.max((d.g || M.g) + 1, [6, 6, 8, 9][tier]))) + ' ' + (d.sig221 || '')).toUpperCase() + '<br>' + auth + '</p>'); }catch(e){ console.error(e); } return h; }; })(offDocHTML);
+/* the Afghanistan Campaign Medal stripes summed to 78/88: scaled to the full ribbon width */
+(function(){ const A = AWD.acm && AWD.acm[2]; if(Array.isArray(A)){ const s = A.reduce((a, x) => a + x[1], 0); if(Math.abs(s - 88) > 0.5) AWD.acm[2] = A.map(([c, w]) => [c, w*88/s]); } })();
+
+/* ===== v222 · Varied jobs inside each branch.
+   An officer does not hold the same job title at every grade: a lieutenant is a rifle, scout or mortar platoon leader, a company executive
+   officer or a battalion staff officer; a captain commands a company, or serves as a battalion or brigade staff officer, an aide-de-camp,
+   an observer-coach at a combat training center, a West Point instructor, an ROTC professor or a recruiting company commander; a major is a
+   battalion or brigade executive or operations officer, a division planner, a staff college student or a congressional fellow; and so on.
+   Each assignment draws one of these real jobs (by service, grade and career field). Command assignments are kept most of the time. ===== */
+const P222 = {
+  army:{ 1:[['Company Executive Officer, {c} Company, {bn}'], ['Scout Platoon Leader, Headquarters and Headquarters Company, {bn}', /inf|arm/], ['Mortar Platoon Leader, Headquarters and Headquarters Company, {bn}', /inf/], ['Battalion Assistant S-3 (operations), {bn}'], ['Battalion S-1 (personnel officer), {bn}'], ['Support Platoon Leader, Headquarters and Headquarters Company, {bn}']],
+    2:[['Company Executive Officer, {c} Company, {bn}'], ['Scout Platoon Leader, Headquarters and Headquarters Company, {bn}', /inf|arm/], ['Battalion S-4 (logistics officer), {bn}'], ['Battalion Assistant S-3 (operations), {bn}'], ['Brigade Battle Captain, {bde}'], ['Aide-de-Camp to the Deputy Commanding General, {div}']],
+    3:[['Battalion Assistant S-3 (plans), {bn}'], ['Battalion S-4 (logistics officer), {bn}'], ['Brigade Assistant S-3 (planner), {bde}'], ['Headquarters and Headquarters Company Commander, {bn}'], ['Aide-de-Camp to the Commanding General, {div}'], ['Observer, Coach/Trainer, Joint Readiness Training Center, Fort Johnson'], ['Observer, Coach/Trainer, National Training Center, Fort Irwin'], ['Instructor, Department of Social Sciences, U.S. Military Academy', null, 'usma'], ['Assistant Professor of Military Science, Army ROTC', null, 'usacc'], ['Company Commander, U.S. Army Recruiting Command', null, 'usarec'], ['Small Group Leader, Captains Career Course', null, 'cac']],
+    4:[['Battalion Executive Officer, {bn}'], ['Battalion Operations Officer (S-3), {bn}'], ['Brigade Executive Officer, {bde}'], ['Brigade Operations Officer (S-3), {bde}'], ['Division Plans Officer (G-5), {div}'], ['Deputy G-3 (current operations), {div}'], ['Student, U.S. Army Command and General Staff College', null, 'cac'], ['Army Congressional Fellow, U.S. House of Representatives']],
+    5:[['Deputy Commanding Officer, {bde}'], ['Division G-3 (operations), {div}'], ['Division G-5 (plans), {div}'], ['Division G-4 (logistics), {div}'], ['Military Assistant to the Commanding General, {div}'], ['Instructor, U.S. Army War College']],
+    6:[['Chief of Staff, {div}'], ['Executive Officer to the Commanding General, {div}'], ['Student, U.S. Army War College'], ['Garrison Commander at the home station of {div}']] },
+  usmc:{ 1:[['Weapons Platoon Commander, {c} Company, {bn}', /inf/], ['Company Executive Officer, {c} Company, {bn}'], ['Battalion Assistant Operations Officer (S-3A), {bn}'], ['Platoon Commander, Combined Anti-Armor Team, Weapons Company, {bn}', /inf/]],
+    2:[['Company Executive Officer, {c} Company, {bn}'], ['Battalion Assistant Operations Officer (S-3A), {bn}'], ['Battalion Logistics Officer (S-4), {bn}'], ['Aide-de-Camp to the Assistant Division Commander, {div}']],
+    3:[['Weapons Company Commander, {bn}'], ['Battalion Assistant Operations Officer, {bn}'], ['Staff Platoon Commander, The Basic School, Quantico'], ['Series Commander, Officer Candidates School, Quantico'], ['Marine Officer Instructor, a Naval ROTC unit'], ['Executive Officer, a Marine Corps recruiting station'], ['Aide-de-Camp to the Commanding General, {div}']],
+    4:[['Battalion Executive Officer, {bn}'], ['Battalion Operations Officer (S-3), {bn}'], ['Regimental Operations Officer, {bde}'], ['Division Future Operations Officer, {div}'], ['Student, Marine Corps Command and Staff College'], ['Marine Corps Congressional Fellow, U.S. Senate']],
+    5:[['Regimental Executive Officer, {bde}'], ['Division Operations Officer (G-3), {div}'], ['Inspector-Instructor, a Marine Forces Reserve battalion'], ['Military Assistant to the Commanding General, {div}']],
+    6:[['Chief of Staff, {div}'], ['Assistant Chief of Staff, G-3, a Marine Expeditionary Force'], ['Student, Marine Corps War College']] },
+  navy:{ 1:[['Damage Control Assistant, {u}', /swo/], ['Auxiliaries Officer, {u}', /swo/], ['Communications Officer, {u}', /swo/], ['Gunnery Officer, {u}', /swo/], ['Main Propulsion Assistant, {u}', /swo/], ['Electrical Officer, {u}', /sub/], ['Sonar Officer, {u}', /sub/], ['Line Division Officer, {u}', /avn/]],
+    2:[['Fire Control Officer, {u}', /swo/], ['Assistant Navigator, {u}', /swo/], ['Damage Control Assistant, {u}', /swo|sub/], ['Assistant Operations Officer, {u}'], ['Aircraft Division Officer, {u}', /avn/], ['Tactics Instructor, a Fleet Replacement Squadron', /avn/]],
+    3:[['Navigator, {u}'], ['Operations Officer (department head), {u}'], ['Chief Engineer (department head), {u}', /swo|sub/], ['Flag Lieutenant to the Commander, {grp}'], ['Instructor, Surface Warfare Officers School, Newport', /swo/], ['Instructor, Naval Nuclear Power School', /sub/], ['Instructor Pilot, a Fleet Replacement Squadron', /avn/], ['Company Officer, U.S. Naval Academy']],
+    4:[['Executive Officer, {u}'], ['Operations Officer, staff of {grp}'], ['Student, U.S. Naval War College'], ['Navy Congressional Fellow, U.S. Senate'], ['Joint Planner, a combatant command']],
+    5:[['Deputy Commodore, {grp}'], ['Chief Staff Officer, {grp}'], ['Assistant Chief of Staff for Operations (N3), {grp}'], ['Military Assistant to a fleet commander']],
+    6:[['Chief of Staff, {grp}'], ['Commanding Officer, a naval station'], ['Executive Assistant to a numbered fleet commander']] },
+  af:{ 1:[['Pilot and Assistant Chief of Scheduling, {u}', /pil/], ['Pilot and Chief of Mobility, {u}', /pil/], ['Assistant Flight Commander, {u}'], ['Executive Officer, {u}']],
+    2:[['Instructor Pilot, {u}', /pil/], ['Pilot and Assistant Chief of Weapons and Tactics, {u}', /pil/], ['Assistant Flight Commander, {u}'], ['Wing Protocol Officer, {wing}']],
+    3:[['Chief of Weapons and Tactics, {u}'], ['Chief of Standardization and Evaluation, {u}'], ['Chief of Safety, {wing}'], ['Wing Executive Officer, {wing}'], ['Instructor, U.S. Air Force Weapons School, Nellis', /pil|abm|isr|cyb|ew|rpa/], ['Aide-de-Camp to the Commander of a numbered air force'], ['Instructor, U.S. Air Force Academy']],
+    4:[['Assistant Director of Operations, {u}'], ['Chief of Wing Plans, {wing}'], ['Student, Air Command and Staff College'], ['Air Force Legislative Fellow, U.S. Senate'], ['Air Operations Center Combat Plans Chief, a numbered air force']],
+    5:[['Deputy Commander, the operations group of {wing}'], ['Chief of Staff, a numbered air force'], ['Student, Air War College'], ['Deputy Director of Operations, a major command headquarters']],
+    6:[['Vice Commander, {wing}'], ['Executive Officer to the Commander, a major command'], ['Senior Fellow, a national security fellowship']] },
+  ussf:{ 1:[['Instructor Crew Commander, {u}'], ['Evaluator Crew Commander, {u}'], ['Mission Planning Cell Chief, {u}']],
+    2:[['Instructor Crew Commander, {u}'], ['Chief of Mission Planning, {u}'], ['Executive Officer, {u}']],
+    3:[['Chief of Standardization and Evaluation, {u}'], ['Chief of Weapons and Tactics, {u}'], ['Delta Executive Officer, {u}'], ['Instructor, U.S. Space Force Weapons School'], ['Aide-de-Camp to the Commander, Space Operations Command']],
+    4:[['Chief of Current Operations, Combined Space Operations Center'], ['Student, Air Command and Staff College'], ['Space Force Legislative Fellow, U.S. House of Representatives']],
+    5:[['Deputy Commander, {u}'], ['Chief, Space Operations Division, the Space Staff'], ['Student, Air War College']],
+    6:[['Executive Officer to the Chief of Space Operations'], ['Vice Commander, a field command']] } };
+const isCmd222 = t => /^(Commander|Commanding Officer|Commodore|Squadron Commander|Delta Commander)\b/.test(t || '');
+function up222(id, ech){ const L = [id].concat(orbChain(id).slice().reverse()); return L.find(x => ORB[x] && (Array.isArray(ech) ? ech.includes(ORB[x].e) : ORB[x].e === ech)); }
+offBillet = (function(f){ return function(svc, home, g){ const B = f.apply(this, arguments); try{ if(!B || !B.unit || !P() || !P().mil || g >= 7 || !P222[svc] || !P222[svc][g]) return B; const M = P().mil; if(M.comp && M.comp !== 'ac') return B; const F = fldOf(M); const fk = F ? F.k : (svc === 'navy' ? 'swo' : svc === 'af' ? 'pil' : svc === 'ussf' ? 'ops' : 'inf');
+  if(svc === 'usmc' && /Platoon Leader/.test(B.title)) B.title = B.title.replace('Platoon Leader', 'Platoon Commander');
+  const h = orbH(P().name + '|' + G.turn + '|' + g + '|' + fk); const cmd = isCmd222(B.title); if(cmd ? h > 0.35 : h > 0.6) return B;
+  const pool = P222[svc][g].filter(x => !x[1] || x[1].test(fk)); if(!pool.length) return B; const pick = pool[Math.floor(orbH(P().name + 'p' + G.turn + g)*pool.length)];
+  const bn = up222(B.unit, ['bn', 'sqn']) || B.unit, bde = up222(B.unit, ['bde', 'rgt', 'grp']) || bn, div = up222(B.unit, ['div', 'mef', 'wing', 'csg', 'esg', 'fleet', 'delta']) || bde, wing = up222(B.unit, ['wing', 'delta']) || div, grp = up222(B.unit, ['csg', 'esg', 'grp', 'fleet']) || div;
+  const nm = id => (ORB[id] || {}).n || ''; const c = 'ABCD'[Math.floor(orbH(P().name + 'c' + G.turn)*4)];
+  const title = pick[0].replace('{u}', nm(B.unit)).replace('{bn}', nm(bn)).replace('{bde}', nm(bde)).replace('{div}', nm(div)).replace('{wing}', nm(wing)).replace('{grp}', nm(grp)).replace('{c}', c);
+  const unit = pick[2] && ORB[pick[2]] ? pick[2] : /\{div\}/.test(pick[0]) ? div : /\{bde\}/.test(pick[0]) ? bde : /\{wing\}/.test(pick[0]) ? wing : /\{grp\}/.test(pick[0]) ? grp : /\{bn\}/.test(pick[0]) ? bn : B.unit;
+  return Object.assign({}, B, { title, unit, k:'x222:' + unit + ':' + G.turn }); }catch(e){ console.error(e); return B; } }; })(offBillet);
 
 boot();
 </script>
