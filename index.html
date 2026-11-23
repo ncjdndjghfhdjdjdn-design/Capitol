@@ -26617,6 +26617,22 @@ clCav = (function(f){ return function(c){ try{ if(G && G.player && isOff() && !i
 /* the intelligence leadership panel names the player when the player holds the post */
 if(typeof igHeads === 'function') igHeads = (function(f){ return function(){ const L = f.apply(this, arguments); try{ if(G && isOff()){ const k = (offE().post || {}).k || ''; const nm = offRank(offE().g) + ' ' + P().name; const map = { 'cc:CYBERCOM':/Director, NSA/, 'ic:nga':/Director, NGA/, dia:/Director, DIA/ }; const re = map[k]; if(re) L.forEach(x => { if(re.test(x[1])) x[2] = nm; }); } }catch(e){} return L; }; })(igHeads);
 
+/* ===== v204 · One person per post, everywhere.
+   When the player holds a post that other pages also show — Commander of Cyber Command and Director of NSA, Chairman, service
+   chiefs, combatant commanders, Director of DIA, Director of NGA, Directors of the Missile Defense and Defense Logistics agencies,
+   a unit's commander — every page (Cyber Command, the National Intelligence Board, the U.S. Military page, the Situation Room, the
+   agencies' leadership lists, phone calls) shows the player, with the player's rank. Nominations or turnover elsewhere in the game
+   cannot put someone else in the player's chair; when the player leaves, a successor takes over. ===== */
+const AGPOST204 = { dia:'dia', 'ic:nga':'nga', 'ag:mda':'mda', 'ag:dla':'dla' };
+function holderSet204(k, name){ try{ if(/^(cc:|jcs:|u:)/.test(k)) return offSetHolder(k, name); const a = AGPOST204[k]; if(a){ agEnsure(); if(G.ag[a] || (typeof AG_SUB !== 'undefined' && AG_SUB[a])) offSetAg(a, name); } }catch(e){ console.error(e); } }
+function holderSync204(){ try{ if(!(G && G.player && isOff())) return; const M = offE(); const k = M.out ? '' : ((M.post && M.post.k) || ''); const synced = /^(cc:|jcs:|u:)/.test(k) || !!AGPOST204[k];
+  if(M.held204 && M.held204 !== k){ holderSet204(M.held204, newName(gen())); M.held204 = null; }
+  if(synced){ const want = P().name; let cur = null; try{ cur = k.startsWith('u:') ? orbCdr(k.slice(2)) : k.startsWith('cc:') ? milName(k.slice(3)) : k.startsWith('jcs:') ? milName(k.slice(4)) : agHead(AGPOST204[k]).name; }catch(e){} if(cur !== want) holderSet204(k, want); M.held204 = k; } }catch(e){ console.error(e); } }
+render = (function(f){ return function(){ holderSync204(); return f.apply(this, arguments); }; })(render);
+offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); holderSync204(); return r; }; })(offMonth);
+/* the player's own rank where the game shows the holder's rank */
+milRank = (function(f){ return function(k){ try{ if(G && isOff() && !offE().out){ const pk = (offE().post || {}).k || ''; if(pk === 'cc:' + k || pk === 'jcs:' + k || (k === 'cjcs' && pk === 'jcs:cjcs')) return offRank(offE().g); } }catch(e){} return f.apply(this, arguments); }; })(milRank);
+
 boot();
 </script>
 </body></html>
