@@ -26885,6 +26885,16 @@ if(typeof mlPaper === 'function') mlPaper = (function(f){ return function(){ ret
    (field army); 94th Army Air and Missile Defense Command; 1st, 8th and 21st Theater Sustainment Commands (theater commands). ===== */
 (function(){ const D = {"21tsc": __I[393], "25id": __I[394], "7id": __I[395], "1tsc": __I[396], "8tsc": __I[397], "94aamdc": __I[398], "4id": __I[399], "8a": __I[400], "2id": __I[401], "ic": __I[402], "1id": __I[403], "1ad": __I[404], "1cav": __I[405]}; Object.keys(D).forEach(id => { if(typeof ORB !== 'undefined' && !ORB[id]) return; SSIIMG[id] = D[id]; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = D[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); }); })();
 
+/* ===== v214 · Unit insignia supplied by the player.
+   Army (patch worn on the sleeve and used as the unit emblem): National Guard divisions — 28th "Keystone", 29th "Blue and Gray",
+   34th "Red Bull", 35th "Santa Fe", 36th "Arrowhead", 38th "Cyclone", 40th "Sunburst", 42nd "Rainbow"; theater commands — SETAF-Africa,
+   7th Army Training Command (Seventh Army patch), 20th CBRNE Command.
+   Marine Corps (emblem only: Marines wear no unit patches on the service uniform): I, II and III Marine Expeditionary Forces;
+   1st, 2nd, 3rd and 4th Marine Divisions. ===== */
+(function(){ const S = {"42id": __I[406], "40id": __I[407], "38id": __I[408], "36id": __I[409], "35id": __I[410], "34id": __I[411], "29id": __I[412], "28id": __I[413], "setafaf": __I[414], "7atc": __I[415], "20cbrne": __I[416]}, E = {"4mardiv": __I[417], "iiimefd": __I[418], "iimefd": __I[419], "imefd": __I[420], "iiimef": __I[421], "iimef": __I[422], "imef": __I[423]};
+  Object.keys(S).forEach(id => { if(!ORB[id]) return; SSIIMG[id] = S[id]; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = S[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); });
+  Object.keys(E).forEach(id => { if(!ORB[id]) return; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = E[id]; }); })();
+
 boot();
 </script>
 </body></html>
