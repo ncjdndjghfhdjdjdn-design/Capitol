@@ -26263,6 +26263,22 @@ document.addEventListener('click', e => { const el = e.target.closest && e.targe
   const y = a === 'f' ? window.scrollY : 0; render(); window.scrollTo(0, y); }, true);
 (function(){ const s = document.createElement('style'); s.textContent = '.t195g{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin:10px 0 6px}.t195f{all:unset;cursor:pointer;border:1px solid #bbb;background:#fff;color:#111;padding:8px 10px;font-size:13px;display:flex;flex-direction:column;gap:2px}.t195f:hover{border-color:#111}.t195f.on{border:2px solid #111;background:#efe9da}.t195f small{font-family:Arial,sans-serif;color:#555}.t195f span{font-family:Arial,sans-serif;font-size:11.5px;color:#444}'; document.head.appendChild(s); })();
 
+/* ===== v196 · The officer's emblem follows the assignment: in the top bar, on the career page header and on the dashboard.
+   At the CIA the CIA seal, at NSA the NSA seal, on the Joint Staff the Joint Chiefs seal, at a combatant command its seal, at the
+   White House the White House seal (the Vice President's seal for his aide), in a unit its emblem, otherwise the service seal. ===== */
+function offSeal196(M){ M = M || offE(); if(!M) return null; const k = (M.post && M.post.k) || ''; const S = (key) => SEAL[key] ? key : null;
+  if(k.startsWith('jx:')){ const J = (typeof JOBS189 !== 'undefined' ? JOBS189 : []).find(j => j.k === k.slice(3)); if(J && J.seal && SEAL[J.seal]) return J.seal; }
+  const IC = { 'ic:adma':'CIA', 'ic:cia':'CIA', 'ic:odni':'DNI', 'ic:nsa':'NSA', 'ic:nga':'NGA', 'ic:nro':'NRO', 'ic:j2':'JCS', dia:'DIA', dj:'JCS', 'ag:mda':'MDA', 'ag:jsoc':'ORB_JSOC', 'ag:disa':'DEF', 'ag:dla':'DEF', 'ag:dsca':'DEF' };
+  if(IC[k] && SEAL[IC[k]]) return IC[k];
+  if(k === 'cc:CYBERCOM') return S('CYBERCOM'); if(k.startsWith('cc:') && SEAL[k.slice(3)]) return k.slice(3);
+  if(k === 'jcs:csa') return S('ARMY') || 'JCS'; if(k === 'jcs:csaf') return S('USAF') || 'JCS'; if(k === 'jcs:cno') return S('NAVY') || 'JCS'; if(k === 'jcs:cmc') return S('USMC') || 'JCS'; if(k === 'jcs:cso') return S('USSF') || 'JCS'; if(k === 'jcs:cngb' || k.startsWith('ngb:')) return S('NGB');
+  if(/^(jcs:|js:)/.test(k)) return S('JCS'); if(k.startsWith('osd:')) return S('DEF');
+  const ch = M.unit && ORB[M.unit] ? [M.unit].concat(orbChain(M.unit).slice().reverse()) : []; for(const id of ch){ if(SEAL['ORB_' + id.toUpperCase()]) return 'ORB_' + id.toUpperCase(); }
+  const sv = OFFSV[M.svc]; return sv && SEAL[sv[2]] ? sv[2] : null; }
+topAvatar = (function(f){ return function(pl){ try{ if(G && isOff() && pl === P()){ const k = offSeal196(); if(k && SEAL[k]) return '<div class="tb-av sealed"><img src="' + SEAL[k] + '" alt="" title="' + esc((offE().post || {}).title || '') + '"></div>'; } }catch(e){} return f.apply(this, arguments); }; })(topAvatar);
+/* the career page and dashboard header: the emblem of the post */
+offView = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const k = offSeal196(); if(k && SEAL[k]) h = h.replace(/(<div class="offhero"><div class="offid">)(<img[^>]*>|<div[^>]*class="[^"]*orbe[^"]*"[\s\S]*?<\/div>)/, '$1<img src="' + SEAL[k] + '" alt="" style="width:84px;height:84px;object-fit:contain">'); }catch(e){} return h; }; })(offView);
+
 boot();
 </script>
 </body></html>
