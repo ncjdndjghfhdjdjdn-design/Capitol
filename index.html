@@ -26911,6 +26911,17 @@ if(typeof mlPaper === 'function') mlPaper = (function(f){ return function(){ ret
   const inherit = { usamc:/Sustainment Command|TACOM|Aviation and Missile|Communications-Electronics|Joint Munitions/, usace:/Division$/, tradoc:/Center of Excellence/, afc:/DEVCOM/ };
   ORBK.forEach(id => { const x = ORB[id]; const key = 'ORB_' + id.toUpperCase(); if(SEAL[key] || /West Point|Military Academy/.test(x.n)) return; for(const p of Object.keys(inherit)){ if(S[p] && orbChain(id).includes(p) && inherit[p].test(x.n) && ['div', 'army', 'bde'].includes(x.e)){ SEAL[key] = S[p]; break; } } }); })();
 
+/* ===== v217 · Insignia supplied by the player. DEVCOM's own shoulder sleeve insignia (sleeve patch and emblem). Distinctive unit insignia
+   (crests) as the emblems of Joint Munitions Command, Communications-Electronics Command, TACOM, Aviation and Missile Command and Army
+   Sustainment Command: their soldiers still wear the Army Materiel Command patch on the sleeve. The U.S. Military Academy coat of arms
+   as West Point's emblem. These replace the parent-command patches shown before. ===== */
+(function(){ const S = {"devcom": __I[442]}, E = {"jmc": __I[443], "cecom": __I[444], "tacom": __I[445], "amcom": __I[446], "asc": __I[447], "usma": __I[448]};
+  Object.keys(S).forEach(id => { if(!ORB[id]) return; SSIIMG[id] = S[id]; SEAL['ORB_' + id.toUpperCase()] = S[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); });
+  Object.keys(E).forEach(id => { if(!ORB[id]) return; SEAL['ORB_' + id.toUpperCase()] = E[id]; }); })();
+/* soldiers of commands that show their own crest (or their parent's patch) as an emblem still wear the parent command's patch on the sleeve */
+(function(){ const P = { usamc:['jmc', 'cecom', 'tacom', 'amcom', 'asc'], usace:ORBK.filter(id => orbChain(id).includes('usace') && / Division$/.test(ORB[id].n)), tradoc:ORBK.filter(id => orbChain(id).includes('tradoc') && /Center of Excellence/.test(ORB[id].n)) };
+  Object.keys(P).forEach(p => { if(!SSIIMG[p]) return; P[p].forEach(id => { if(ORB[id] && !SSIIMG[id]) SSIIMG[id] = SSIIMG[p]; }); }); })();
+
 boot();
 </script>
 </body></html>
