@@ -26879,6 +26879,12 @@ offDocHTML = (function(f){ return function(){ return deptHTML212(f.apply(this, a
 if(typeof orbDocHTML === 'function') orbDocHTML = (function(f){ return function(){ return deptHTML212(f.apply(this, arguments)); }; })(orbDocHTML);
 if(typeof mlPaper === 'function') mlPaper = (function(f){ return function(){ return deptHTML212(f.apply(this, arguments)); }; })(mlPaper);
 
+/* ===== v213 · Shoulder sleeve insignia supplied by the player, used both as unit emblems (order of battle, documents) and as the
+   patch worn on the left sleeve by everyone assigned to the unit: 1st Cavalry Division, 1st Armored Division, 1st Infantry Division,
+   2nd Infantry Division, 4th Infantry Division, 7th Infantry Division, 25th Infantry Division (divisions); I Corps (corps); Eighth Army
+   (field army); 94th Army Air and Missile Defense Command; 1st, 8th and 21st Theater Sustainment Commands (theater commands). ===== */
+(function(){ const D = {"21tsc": __I[393], "25id": __I[394], "7id": __I[395], "1tsc": __I[396], "8tsc": __I[397], "94aamdc": __I[398], "4id": __I[399], "8a": __I[400], "2id": __I[401], "ic": __I[402], "1id": __I[403], "1ad": __I[404], "1cav": __I[405]}; Object.keys(D).forEach(id => { if(typeof ORB !== 'undefined' && !ORB[id]) return; SSIIMG[id] = D[id]; const key = 'ORB_' + id.toUpperCase(); if(!SEAL[key]) SEAL[key] = D[id]; const i = SSI_OWN_MISSING.indexOf(id); if(i >= 0) SSI_OWN_MISSING.splice(i, 1); }); })();
+
 boot();
 </script>
 </body></html>
