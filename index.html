@@ -25208,8 +25208,8 @@ unifSVG = function(){ const M = awE(); const pl = P(); const U = UNIF[M.svc] || 
   const bd = (M.bd || []).filter(k => BDG[k] && k !== 'ranger'); const ident = bd.filter(k => BDG[k][2] === 'id' && !['cas', 'cash'].includes(k)); const cmdPin = bd.filter(k => ['cas', 'cash'].includes(k)); const breast = bd.filter(k => BDG[k][2] !== 'id');
   const above = [], below = [], flap = []; const top = bottom - rows.length*rh;
   if(sv === 'army'){ const g1 = breast.filter(k => ['cib', 'cmb', 'cab'].includes(k)), g2 = breast.filter(k => ['eib', 'efmb', 'esb'].includes(k)), g3 = breast.filter(k => ['mpara', 'spara', 'para', 'mmff', 'mff', 'mavb', 'avb', 'savb', 'meodb', 'seodb', 'eodb', 'aaslt', 'pathf'].includes(k)); const lead = g1[0] || g2[0]; const L = (lead ? [lead] : []).concat(g3); L.slice(0, 3).forEach(k => above.push(k)); L.slice(3).forEach(k => flap.push(k)); }
-  else if(sv === 'navy'){ const w = breast.filter(k => ['seal', 'dolph', 'nav', 'nfo', 'swo', 'iw'].includes(k)); if(w[0]) above.push(w[0]); const ff = breast.filter(k => ['mmff', 'mff'].includes(k)); /* a SEAL wears the trident above the ribbons and parachute or free-fall wings below */ if(ff[0]) below.push(ff[0]); else if(w[1]) below.push(w[1]); }
-  else if(sv === 'usmc'){ breast.filter(k => ['mnav', 'nav', 'mso', 'mmff', 'mff'].includes(k)).slice(0, 2).forEach(k => above.push(k)); breast.filter(k => ['rifle', 'pistol'].includes(k)).forEach(k => below.push(k)); }
+  else if(sv === 'navy'){ const w = breast.filter(k => ['seal', 'dolph', 'nav', 'nfo', 'swo', 'iw'].includes(k)); if(w[0]) above.push(w[0]); const ff = breast.filter(k => ['mmff', 'mff', 'gpara'].includes(k)); /* a SEAL wears the trident above the ribbons and parachute or free-fall wings below */ if(ff[0]) below.push(ff[0]); else if(w[1]) below.push(w[1]); }
+  else if(sv === 'usmc'){ breast.filter(k => ['mnav', 'nav', 'mso', 'mmff', 'mff', 'gpara'].includes(k)).slice(0, 2).forEach(k => above.push(k)); breast.filter(k => ['rifle', 'pistol'].includes(k)).forEach(k => below.push(k)); }
   else { const aero = k => ['pilot', 'spilot', 'cpilot', 'space', 'sspace'].includes(k) ? 1 : 0; breast.filter(k => !/^(s|m)?missile$|^sfsb$/.test(k)).slice().sort((a, b) => aero(a) - aero(b)).slice(-2).forEach(k => above.push(k)); }
   const gapA = (sv === 'af' || sv === 'ussf') ? 0.5*UIN : 0.25*UIN, gapB = (sv === 'af' || sv === 'ussf') ? 0.5*UIN : 0.5*UIN; let yA = top - gapA;
   /* v211: never stack badges into the shoulder; badges that do not fit above the ribbons go to the pocket flap (Army) or below the ribbons */ { const room = () => top - gapA - 138; const need = () => above.reduce((a, k) => a + bdgHeight(k), 0) + Math.max(0, above.length - 1)*gapB; while(above.length > 1 && need() > room()){ const wing = k => (BDG[k] || [])[2] === 'wing' || /pilot|avb|nav|mff|para/.test(k); let i = above.length - 1; for(let j = above.length - 1; j > 0; j--){ if(!wing(above[j])){ i = j; break; } } const k = above.splice(i, 1)[0]; if(sv === 'army' && pocket) flap.unshift(k); else below.unshift(k); } }
@@ -26834,6 +26834,50 @@ awBadges = (function(f){ return function(quiet){ const r = f.apply(this, argumen
   if(M.svc === 'af' && fk === 'mdw') badge(['mdw', 'smdw', 'mmdw'][yos >= 15 ? 2 : yos >= 7 ? 1 : 0], quiet); }catch(e){ console.error(e); } return r; }; })(awBadges);
 /* the new Air Force career field: Multi-Domain Warfare Officer (13O), who plans and integrates air, space and cyber operations in the air operations centers */
 (function(){ try{ if(FLD.af && !FLD.af.some(x => x.k === 'mdw')){ const abm = FLD.af.find(x => x.k === 'abm'); FLD.af.push(Object.assign({}, abm || {}, { k:'mdw', code:'13O', n:'Multi-Domain Warfare Officer', d:'Air operations centers and joint staffs: officers who plan and integrate air, space and cyber operations across every domain.', w:{ AR:1, MK:1, WK:1, AO:1 }, line:'AFOQT', t:['Multi-Domain Warfare Officer, combat plans division of {u}', 'Chief, Combat Operations Division of {u}', 'Chief, Strategy Division of {u}', 'Director, an air operations center under {u}'], j211:1 })); } }catch(e){ console.error(e); } })();
+
+/* ===== v212 · Player-supplied badges, department letterheads, and choosing your unit.
+   Badges: Senior and Master Intelligence (Air Force and Space Force intelligence officers, 14N: senior at 7 years, master at 15),
+   Master (Command) Space Operations badge (Space Force, 15 years), Navy and Marine Corps Parachutist insignia (gold jump wings:
+   Navy SEAL and Marine Raider officers).
+   Letterheads: a document headed "Department of the Army / Navy / Air Force" carries that department's seal, not the service emblem.
+   Sandbox start: choose the unit you report to, or let your department assign you. ===== */
+Object.assign(BADGEIMG, {"mintel": [__I[389], 260, 186], "sintel": [__I[390], 260, 177], "mspace": [__I[391], 260, 85], "gpara": [__I[392], 260, 80]});
+Object.assign(BDG, { sintel:['Senior Intelligence Badge', 'af', 'skill'], mintel:['Master Intelligence Badge', 'af', 'skill'], mspace:['Master Space Operations Badge', 'ussf', 'wing'], gpara:['Navy and Marine Corps Parachutist insignia', 'navy', 'gold'] });
+Object.assign(BIMGK, { sintel:'sintel', mintel:'mintel', mspace:'mspace', gpara:'gpara' });
+Object.assign(BDGW, { sintel:2.75, mintel:2.75, mspace:2.75, gpara:2.0 });
+FAM211.push(['intel', 'sintel', 'mintel'], ['space', 'sspace', 'mspace']);
+bdgElig = (function(f){ return function(k, M){ try{ if(k === 'sintel' || k === 'mintel') return f.call(this, 'intel', M); if(k === 'mspace') return f.call(this, 'sspace', M);
+  if(k === 'gpara'){ const F = fldOf(M); const fk = F ? F.k : ''; return (M.svc === 'navy' && fk === 'nsw') || (M.svc === 'usmc' && fk === 'mso'); } }catch(e){} return f.apply(this, arguments); }; })(bdgElig);
+awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ const M = awE(); if(!isOff() || M.out) return r; const F = fldOf(M); const fk = F ? F.k : ''; const yos = offYos(M);
+  if((M.svc === 'af' || M.svc === 'ussf') && fk === 'isr'){ if(yos >= 15) badge('mintel', quiet); else if(yos >= 7) badge('sintel', quiet); }
+  if(M.svc === 'ussf' && (!fk || fk === 'ops' || fk === 'ew') && yos >= 15) badge('mspace', quiet);
+  if(((M.svc === 'navy' && fk === 'nsw') || (M.svc === 'usmc' && fk === 'mso')) && M.g >= 2) badge('gpara', quiet); }catch(e){ console.error(e); } return r; }; })(awBadges);
+
+/* ---------- department seals on department letterheads ---------- */
+let DEPT212 = null;
+function deptFix212(root){ try{ if(!root || !root.querySelectorAll || typeof SEAL === 'undefined') return; if(!DEPT212){ DEPT212 = new Map(); [['ARMY', 'DA', /DEPARTMENT OF THE ARMY/i], ['NAVY', 'DN', /DEPARTMENT OF THE NAVY/i], ['USMC', 'DN', /DEPARTMENT OF THE NAVY/i], ['USAF', 'DAF', /DEPARTMENT OF THE AIR FORCE/i], ['USSF', 'DAF', /DEPARTMENT OF THE AIR FORCE/i]].forEach(([s, d, re]) => { if(SEAL[s] && SEAL[d]) DEPT212.set(SEAL[s], [SEAL[d], re]); }); }
+  root.querySelectorAll('img').forEach(img => { const m = DEPT212.get(img.getAttribute('src')); if(!m) return; let el = img.parentElement; for(let i = 0; i < 3 && el; i++, el = el.parentElement){ const t = (el.textContent || '').slice(0, 500); if(m[1].test(t)){ img.setAttribute('src', m[0]); return; } if(t.length > 500) return; } }); }catch(e){ console.error(e); } }
+try{ new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(n => { if(n.nodeType === 1) deptFix212(n.tagName === 'IMG' ? n.parentElement : n); })); }).observe(document.documentElement, { childList:true, subtree:true }); }catch(e){}
+render = (function(f){ return function(){ const r = f.apply(this, arguments); try{ deptFix212(document.body); }catch(e){} return r; }; })(render);
+
+/* ---------- sandbox start: choose your unit ---------- */
+const ECH212 = { corps:'Corps', div:'Divisions', bde:'Brigades and regiments', rgt:'Regiments', grp:'Groups', bn:'Battalions', wing:'Wings', sqn:'Squadrons', mef:'Marine Expeditionary Forces', fleet:'Fleets', csg:'Carrier strike groups', team:'Teams', delta:'Deltas', naf:'Numbered air forces', army:'Commands' };
+function unitOpts212(F, M){ try{ let L = []; if(F.homes) L = F.homes(); else if(F.divs) L = F.divs.slice(); else if(F.home) L = [F.home];
+    if(F.def || L.length < 2){ const br = { army:/^Army$/, usmc:/^Marine/, navy:/^Navy$/, af:/^Air Force$/, ussf:/^Space Force$/ }[M.svc]; L = L.concat(ORBK.filter(id => br && br.test(ORB[id].b || '') && ['div', 'bde', 'rgt', 'wing', 'grp', 'delta', 'csg'].includes(ORB[id].e))); }
+    L = Array.from(new Set(L)).filter(id => ORB[id] && !(typeof rcOf === 'function' && rcOf(id)) && !/Reserve|National Guard/.test(ORB[id].n)); return L.slice(0, 160); }catch(e){ return []; } }
+function unitSel212(F, M, cur){ const L = unitOpts212(F, M); const by = {}; L.forEach(id => { const g = ECH212[ORB[id].e] || 'Other units'; (by[g] = by[g] || []).push(id); });
+  const dept = { army:'Department of the Army', usmc:'Department of the Navy (Marine Corps)', navy:'Department of the Navy', af:'Department of the Air Force', ussf:'Department of the Air Force (Space Force)' }[M.svc] || 'your department';
+  return '<label>Unit</label><select data-t212="u" aria-label="Unit"><option value="">Let the ' + esc(dept) + ' assign me</option>' + Object.keys(by).map(g => '<optgroup label="' + esc(g) + '">' + by[g].map(id => '<option value="' + id + '"' + (cur === id ? ' selected' : '') + '>' + esc(ORB[id].n + (ORB[id].h ? ' · ' + ORB[id].h : '')) + '</option>').join('') + '</optgroup>').join('') + '</select>'; }
+t195View = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const M = offE(); const T = M.t188; const F = (FLD[M.svc] || []).find(x => x.k === T.pick195); if(F){ const i = h.indexOf('<button class="btn pri" data-t195="go"'); if(i > 0) h = h.slice(0, i) + unitSel212(F, M, T.unit212) + h.slice(i); } }catch(e){ console.error(e); } return h; }; })(t195View);
+fldHome = (function(f){ return function(F, M){ try{ if(M && M.unit212 && ORB[M.unit212]) return M.unit212; }catch(e){} return f.apply(this, arguments); }; })(fldHome);
+t195Go = (function(f){ return function(){ const M = offE(); const T = M.t188; const u = T && T.unit212; if(u && ORB[u]) M.unit212 = u; const r = f.apply(this, arguments); try{ if(u && ORB[u]){ offHist('Assigned at own request to ' + ORB[u].n + '.'); } M.unit212 = null; }catch(e){} return r; }; })(t195Go);
+document.addEventListener('change', e => { const el = e.target; if(!el || !el.dataset || el.dataset.t212 !== 'u' || !G || !isOff()) return; const T = offE().t188; if(T) T.unit212 = el.value || null; }, true);
+document.addEventListener('click', e => { const el = e.target.closest && e.target.closest('[data-t195="f"]'); if(el && G && isOff()){ const T = offE().t188; if(T && T.pick195 !== el.dataset.v) T.unit212 = null; } }, true);
+/* the same rule applied to the document HTML itself (documents opened, printed or saved) */
+function deptHTML212(h){ try{ if(typeof h !== 'string' || !/DEPARTMENT OF THE/i.test(h)) return h; [['ARMY', 'DA', /DEPARTMENT OF THE ARMY/i], ['NAVY', 'DN', /DEPARTMENT OF THE NAVY/i], ['USMC', 'DN', /DEPARTMENT OF THE NAVY/i], ['USAF', 'DAF', /DEPARTMENT OF THE AIR FORCE/i], ['USSF', 'DAF', /DEPARTMENT OF THE AIR FORCE/i]].forEach(([s, d, re]) => { if(SEAL[s] && SEAL[d] && re.test(h) && h.indexOf(SEAL[s]) >= 0) h = h.split(SEAL[s]).join(SEAL[d]); }); }catch(e){} return h; }
+offDocHTML = (function(f){ return function(){ return deptHTML212(f.apply(this, arguments)); }; })(offDocHTML);
+if(typeof orbDocHTML === 'function') orbDocHTML = (function(f){ return function(){ return deptHTML212(f.apply(this, arguments)); }; })(orbDocHTML);
+if(typeof mlPaper === 'function') mlPaper = (function(f){ return function(){ return deptHTML212(f.apply(this, arguments)); }; })(mlPaper);
 
 boot();
 </script>
