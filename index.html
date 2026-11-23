@@ -26794,6 +26794,19 @@ awBadges = (function(f){ return function(quiet){ const r = f.apply(this, argumen
   if(M.bd.includes('ccid') && !(M.ccid && SEAL[M.ccid])) M.bd = M.bd.filter(x => x !== 'ccid'); }catch(e){ console.error(e); } return r; }; })(awBadges);
 badgeSVG = (function(f){ return function(k, cx, cy, sc){ if(k === 'ccid'){ try{ const M = isOff() ? offE() : null; if(!(M && M.ccid && SEAL[M.ccid])) return ''; }catch(e){ return ''; } } return f.apply(this, arguments); }; })(badgeSVG);
 
+/* ===== v209 · Badge images supplied by the player: Combat Medical Badge, Expert Field Medical Badge, Marine Special Operator insignia
+   (MARSOC), Air Force Aircraft Maintenance badges (basic, senior, master), Security Forces badge (shield), Air Battle Manager wings
+   (basic, senior, master). Silver badges are recolored to the same oxidized silver as the others; the Marine Raider insignia stays gold.
+   Maintenance officers now progress through the three levels like other Air Force badges (senior at 7 years, master at 15). ===== */
+Object.assign(BADGEIMG, {"cmb": [__I[370], 240, 180], "efmb": [__I[371], 240, 156], "mso": [__I[372], 260, 189], "mxb": [__I[373], 240, 111], "smxb": [__I[374], 240, 176], "mmxb": [__I[375], 240, 160], "sfsb": [__I[376], 200, 298], "abm": [__I[377], 260, 92], "mabm": [__I[378], 260, 122], "sabm": [__I[379], 260, 114]});
+BDG.smxb = ['Senior Aircraft Maintenance Badge', 'af', 'skill']; BDG.mmxb = ['Master Aircraft Maintenance Badge', 'af', 'skill'];
+Object.assign(BIMGK, { cmb:'cmb', efmb:'efmb', mso:'mso', mxb:'mxb', smxb:'smxb', mmxb:'mmxb', sfsb:'sfsb', abm:'abm', sabm:'sabm', mabm:'mabm' });
+Object.assign(BDGW, { cmb:2.0, efmb:1.9, mso:2.2, mxb:1.5, smxb:1.5, mmxb:1.5, sfsb:1.25, abm:2.75, sabm:2.75, mabm:2.75 });
+const MXL209 = ['mxb', 'smxb', 'mmxb'];
+bdgElig = (function(f){ return function(k, M){ if(k === 'smxb' || k === 'mmxb'){ try{ const F = fldOf(M); return M.svc === 'af' && F && F.k === 'mx'; }catch(e){ return false; } } return f.apply(this, arguments); }; })(bdgElig);
+badge = (function(f){ return function(k){ try{ if(k === 'mxb' && isOff()){ const M = offE(); if(M.bd.includes('smxb') || M.bd.includes('mmxb')) return; } }catch(e){} return f.apply(this, arguments); }; })(badge);
+awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ const M = awE(); const F = fldOf(M); if(M.svc === 'af' && F && F.k === 'mx'){ const yos = offYos(M); const want = MXL209[yos >= 15 ? 2 : yos >= 7 ? 1 : 0]; if(!M.bd.includes(want)){ M.bd = M.bd.filter(x => !MXL209.includes(x)); badge(want, quiet); } } }catch(e){ console.error(e); } return r; }; })(awBadges);
+
 boot();
 </script>
 </body></html>
