@@ -26241,6 +26241,28 @@ offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); 
 if(typeof jobStep189 === 'function') jobStep189 = (function(f){ return function(M){ const was = M.post && M.post.k; const r = f.apply(this, arguments); try{ if(M.post && M.post.k !== was) idSync194(M); }catch(e){} return r; }; })(jobStep189);
 offAssign = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()) idSync194(offE()); }catch(e){} return r; }; })(offAssign);
 
+/* ===== v195 · Sandbox start: skip the entrance test and pick the career field yourself.
+   The booklet screen gets a "Skip the test" button. The player then chooses any career field of the service (no minimum scores,
+   no selection boards), a commissioning source and an assignment region; the officer is designated straight into that field. ===== */
+function t195View(){ const M = offE(); const T = M.t188; const sv = M.svc; const L = FLD[sv] || []; const P_ = T.pref; const B = T188B[sv] || T188B.army;
+  const fl = L.map(F => '<button class="t195f' + (T.pick195 === F.k ? ' on' : '') + '" data-t195="f" data-v="' + F.k + '"><b>' + esc(F.n) + '</b> <small>' + esc(F.code) + '</small><span>' + esc(F.d || '') + '</span></button>').join('');
+  return '<div class="t188"><div class="t188bar"><b>' + esc(B.code) + '</b><span>Sandbox start · choose your career field</span><button class="btn sm" data-t195="back" data-v="">← Take the test instead</button></div>' +
+    '<div class="t188paper wide"><h4 class="t188part">CHOOSE YOUR CAREER FIELD</h4><p class="t188ins">Sandbox start: no test, no minimum scores and no board. You are designated in the field you pick (special operations fields included). Your record shows that the test was waived.</p><div class="t195g">' + fl + '</div>' +
+    '<div class="t188form"><label>Commissioning source</label><div class="t188rad">' + (T188SRC[sv] || []).map(o => '<button class="' + (P_.src === o[0] ? 'on' : '') + '" data-t188="src" data-v="' + o[0] + '">' + esc(o[1]) + '</button>').join('') + '</div>' +
+    '<label>Assignment preference</label><select data-t188r="1" aria-label="Region">' + T188REG.map(o => '<option value="' + o[0] + '"' + (P_.reg === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('') + '</select>' +
+    '<button class="btn pri" data-t195="go" data-v=""' + (T.pick195 ? '' : ' disabled') + '>Begin your service' + (T.pick195 ? ' as ' + esc((L.find(x => x.k === T.pick195) || {}).n || '') : '') + '</button></div></div></div>'; }
+function t195Go(){ const M = offE(); const T = M.t188; const sv = M.svc; const F = (FLD[sv] || []).find(x => x.k === T.pick195); if(!F) return;
+  const S = {}; Object.keys(T188N).forEach(k => S[k] = 60); M.asv = S; M.asvN = null; M.asvTot = null; M.src = T.pref.src; M.pref188 = { reg:T.pref.reg, vol:{} };
+  offHist('Commissioned through ' + ((T188SRC[sv] || []).find(o => o[0] === T.pref.src) || ['', 'the officer program'])[1] + '; entrance test waived.');
+  const placed = /^(cc:|jcs:|ngb:|ic:|js:|osd:|ag:)|^(dj|dia)$/.test(M.post && M.post.k || '') || M.g >= 9;
+  if(placed){ M.fld = F.k; M.fldLock = true; awBadges(true); } else { M.fld = null; M.fldLock = false; fldSet(F.k, 'Designated ' + F.n + ' (' + F.code + ')'); M.fldLock = true; }
+  T.st = 'done'; UI.screen = 'game'; UI.tab = 'dash'; try{ save(); }catch(e){} }
+t188View = (function(f){ return function(){ const M = offE(); const T = M.t188; if(T && T.st === 'pick') return t195View(); let h = f.apply(this, arguments); if(T && T.st === 'test') h = h.replace('<button class="btn sm" data-act="theme"', '<button class="btn sm" data-t195="skip" data-v="">Skip the test · choose my field</button><button class="btn sm" data-act="theme"'); return h; }; })(t188View);
+document.addEventListener('click', e => { const el = e.target.closest && e.target.closest('[data-t195]'); if(!el || !G || !isOff()) return; e.preventDefault(); e.stopPropagation(); const T = offE().t188; if(!T) return; const a = el.dataset.t195;
+  if(a === 'skip') T.st = 'pick'; else if(a === 'back') T.st = 'test'; else if(a === 'f') T.pick195 = el.dataset.v; else if(a === 'go'){ t195Go(); }
+  const y = a === 'f' ? window.scrollY : 0; render(); window.scrollTo(0, y); }, true);
+(function(){ const s = document.createElement('style'); s.textContent = '.t195g{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin:10px 0 6px}.t195f{all:unset;cursor:pointer;border:1px solid #bbb;background:#fff;color:#111;padding:8px 10px;font-size:13px;display:flex;flex-direction:column;gap:2px}.t195f:hover{border-color:#111}.t195f.on{border:2px solid #111;background:#efe9da}.t195f small{font-family:Arial,sans-serif;color:#555}.t195f span{font-family:Arial,sans-serif;font-size:11.5px;color:#444}'; document.head.appendChild(s); })();
+
 boot();
 </script>
 </body></html>
