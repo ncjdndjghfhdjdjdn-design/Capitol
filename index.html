@@ -25728,7 +25728,7 @@ function fldOfUnit188(svc, id){ const x = ORB[id]; if(!x) return null; const k =
   if(svc === 'af') return AFFLY.includes(k) ? 'pil' : k === 'icbm' ? 'msl' : k === 'c2air' ? 'abm' : k === 'drone' ? 'rpa' : ['isr', 'nsa'].includes(k) ? 'isr' : k === 'cyb' ? 'cyb' : k === 'ew' ? 'ew' : k === 'ci' ? 'osi' : null;
   if(svc === 'ussf') return k === 'space' ? 'ops' : k === 'ew' ? 'ew' : k === 'cyb' ? 'cyb' : ['isr', 'mi'].includes(k) ? 'isr' : null;
   return null; }
-fldHome = (function(f){ return function(F, M){ try{ if(F && F.homes && !(M && M.comp && M.comp !== 'ac')){ const L = F.homes().filter(id => ORB[id]); if(L.length){ const reg = M && M.pref188 && M.pref188.reg; const inReg = reg ? L.filter(id => reg188(id) === reg) : []; const pool = inReg.length ? inReg : L; const h = OFFST[P().st]; if(h && pool.includes(h)) return h; return pool[Math.floor(orbH(P().name + F.k + (reg || ''))*pool.length)]; } } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(fldHome);
+fldHome = (function(f){ return function(F, M){ try{ if(F && F.homes && !(M && M.comp && M.comp !== 'ac')){ const L = F.homes().filter(id => ORB[id] && !(typeof rcOf === 'function' && rcOf(id))); /* active duty is not posted to Guard or Reserve units */ if(L.length){ const reg = M && M.pref188 && M.pref188.reg; const inReg = reg ? L.filter(id => reg188(id) === reg) : []; const pool = inReg.length ? inReg : L; const h = OFFST[P().st]; if(h && pool.includes(h)) return h; return pool[Math.floor(orbH(P().name + F.k + (reg || ''))*pool.length)]; } } }catch(e){ console.error(e); } return f.apply(this, arguments); }; })(fldHome);
 /* a rough region for each unit, from its home station */
 function reg188(id){ const h = (ORB[id] && ORB[id].h) || ''; if(/Korea/.test(h)) return 'kor'; if(/Japan|Hawaii|, HI|Guam|Alaska|, AK|Okinawa|Pacific/.test(h)) return 'pac'; if(/Germany|Italy|United Kingdom|England|Belgium|Spain|Poland|Europe/.test(h)) return 'eur'; if(/Qatar|Kuwait|Bahrain|Saudi|Emirates|Djibouti|Jordan/.test(h)) return 'cent'; if(/, (WA|OR|CA|NV|AZ|UT|ID|MT|WY|CO|NM|ND|SD|NE|KS|OK|TX)\b/.test(h)) return 'west'; return 'east'; }
 
@@ -26162,6 +26162,19 @@ const RANKIMG = {"4": ["data:image/webp;base64,UklGRvoRAABXRUJQVlA4WAoAAAAQAAAAd
 rankSVG = (function(f){ return function(g, svc, x, y, s){ const I = RANKIMG[g]; if(!I) return f.apply(this, arguments); const sc = s || 1; const w = g === 6 ? 1.5*UIN : 1.0*UIN*I[1]/I[2], h = g === 6 ? w*I[2]/I[1] : 1.0*UIN; const mir = g === 6 && x > 210;
   return '<g transform="translate(' + x + ' ' + y + ') scale(' + (mir ? -sc : sc) + ' ' + sc + ')"><image href="' + I[0] + '" x="' + (-w/2) + '" y="' + (-h/2) + '" width="' + w + '" height="' + h + '" preserveAspectRatio="xMidYMid meet"/></g>'; }; })(rankSVG);
 offStars = (function(f){ return function(g, svc){ const I = RANKIMG[g]; const navy = (svc || ((P() || {}).mil || {}).svc) === 'navy'; if(!I || navy && false) return f.apply(this, arguments); return '<img class="offins" src="' + I[0] + '" alt="" style="height:' + (g === 6 ? 12 : 18) + 'px;width:auto;vertical-align:middle">'; }; })(offStars);
+/* v194 · grade insignia placed on the shoulder loops as the regulations say (DA PAM 670-1 21-6; NAVPERS 15665I 4103): centered
+   front to back, 5/8 in from the outside shoulder seam; the top of the insignia toward the collar — the oak leaf's stem toward the
+   shoulder seam, the eagle's head toward the collar and facing front (a mirrored pair), the stars lengthwise with one ray toward the
+   collar, and the bars parallel to the shoulder seam. The loop lies on top of the shoulder, so in this front view the insignia are
+   foreshortened across the loop. */
+rankSVG = function(g, svc, x, y){ const U_ = UIN; const L = x < 210; const dirC = L ? 1 : -1; const outer = x - dirC*31.85; const f = 0.55; const S_ = '#d9dde3', G_ = '#d4a017', ST = '#6b7280';
+  let along = 0, inner = '';
+  const rot = (b, mir) => '<g transform="rotate(' + (L ? 90 : -90) + ') scale(' + (mir && !L ? -1 : 1) + ' 1)">' + b + '</g>';
+  if(g >= 7){ const n = Math.min(4, g - 6), gap = 0.08*U_, d = Math.min(0.9*U_, (3.35*U_ - (n - 1)*gap)/n); along = n*d + (n - 1)*gap; const star = r => { let p = ''; for(let i = 0; i < 10; i++){ const a = -Math.PI/2 + i*Math.PI/5, rr = i % 2 ? r*0.42 : r; p += (i ? 'L' : 'M') + (Math.cos(a)*rr).toFixed(2) + ' ' + (Math.sin(a)*rr).toFixed(2); } return '<path d="' + p + 'Z" fill="' + S_ + '" stroke="' + ST + '" stroke-width=".4"/>'; };
+    for(let i = 0; i < n; i++){ const off = -along/2 + d/2 + i*(d + gap); inner += '<g transform="translate(' + (dirC*off) + ' 0)">' + rot(star(d/2)) + '</g>'; } }
+  else if(g >= 4){ const I = RANKIMG[g]; if(g === 6){ const w = 1.5*U_, h = w*I[2]/I[1]; along = h; inner = rot('<image href="' + I[0] + '" x="' + (-w/2) + '" y="' + (-h/2) + '" width="' + w + '" height="' + h + '"/>', true); } else { const h = 1.0*U_, w = h*I[1]/I[2]; along = h; inner = rot('<image href="' + I[0] + '" x="' + (-w/2) + '" y="' + (-h/2) + '" width="' + w + '" height="' + h + '"/>'); } }
+  else { const bw = 0.375*U_, bl = 1.125*U_, n = g === 3 ? 2 : 1, gap = 0.25*U_; along = n*bw + (n - 1)*gap; for(let i = 0; i < n; i++){ const off = -along/2 + bw/2 + i*(bw + gap); inner += '<rect x="' + (off - bw/2) + '" y="' + (-bl/2) + '" width="' + bw + '" height="' + bl + '" rx="1" fill="' + (g === 1 ? G_ : S_) + '" stroke="' + ST + '" stroke-width=".4"/>'; } }
+  const cx = outer + dirC*(0.625*U_ + along/2); return '<g transform="translate(' + cx.toFixed(2) + ' ' + y + ') scale(1 ' + f + ')">' + inner + '</g>'; };
 
 /* ===== v193 · More jobs an officer can ask for, beyond the ones of v189:
    - National Security Council staff (military detailees serve as NSC directors);
@@ -26198,6 +26211,35 @@ offStars = (function(f){ return function(g, svc){ const I = RANKIMG[g]; const na
 /* NATO tours: the NATO Medal; the academies and fellowships are not joint duty */
 awTourEnd = (function(f){ return function(){ const M = awE(); const k = (M.post && M.post.k) || ''; const J = k.startsWith('jx:') && JOBS189.find(j => j.k === k.slice(3)); const r = f.apply(this, arguments); try{ if(J && J.nato && (M.tour || 0) >= 10) award('nato', 'service with NATO: ' + J.a); }catch(e){} return r; }; })(awTourEnd);
 offPosts = (function(f){ return function(){ const L = f.apply(this, arguments); try{ const M = offE(); if(M.comp && M.comp !== 'ac') return L; const add = (k, title, g) => { if(!L.some(p => p.k === k)) L.push({ k, title, g, cc:null, unit:null }); }; add('ag:jsoc', 'Commander, Joint Special Operations Command', 9); add('ag:dsca', 'Director, Defense Security Cooperation Agency', 9); }catch(e){} return L; }; })(offPosts);
+
+/* ===== v194 · Identification badges that follow the assignment.
+   The Joint Chiefs of Staff, Office of the Secretary of Defense, Army Staff and Headquarters Air Force badges are worn from the
+   day an officer joins the staff and become permanent after a year (leave earlier and the badge comes off). Before, the joint jobs
+   gave the badge only after twelve months and the two-star Joint Staff J-2 post gave none.
+   New service-headquarters tours: the Army Staff (Pentagon), the Air Staff (Headquarters Air Force), OPNAV and Headquarters Marine
+   Corps, with their badges where they exist. ===== */
+const STAFFID194 = ['jcsid', 'osdid', 'arstaff', 'hafid'];
+(function(){ try{
+  const add = J => { if(!JOBS189.some(j => j.k === J.k)) JOBS189.push(J); };
+  add({ k:'hqda', org:'Service headquarters', a:'the Army Staff (Headquarters, Department of the Army)', seal:'DA', g:[4, 7], svc:['army'], badge:'arstaff', t:g => g <= 4 ? 'Action Officer, Army Staff (G-3/5/7), the Pentagon' : g === 5 ? 'Branch Chief, Army Staff, the Pentagon' : g === 6 ? 'Division Chief, Army Staff, the Pentagon' : 'Deputy Director, Army Staff, the Pentagon' });
+  add({ k:'haf', org:'Service headquarters', a:'Headquarters Air Force (the Air Staff)', seal:'DAF', g:[4, 7], svc:['af'], badge:'hafid', t:g => g <= 4 ? 'Action Officer, Headquarters Air Force (A3), the Pentagon' : g === 5 ? 'Branch Chief, Headquarters Air Force, the Pentagon' : g === 6 ? 'Division Chief, Headquarters Air Force, the Pentagon' : 'Deputy Director, Headquarters Air Force, the Pentagon' });
+  add({ k:'opnav', org:'Service headquarters', a:'the Office of the Chief of Naval Operations (OPNAV)', seal:'DN', g:[4, 7], svc:['navy'], t:g => g <= 4 ? 'Action Officer, OPNAV, the Pentagon' : g === 5 ? 'Branch Head, OPNAV, the Pentagon' : g === 6 ? 'Division Director (deputy), OPNAV, the Pentagon' : 'Deputy Director, OPNAV, the Pentagon' });
+  add({ k:'hqmc', org:'Service headquarters', a:'Headquarters Marine Corps', seal:'', g:[4, 7], svc:['usmc'], t:g => g <= 4 ? 'Action Officer, Headquarters Marine Corps (Plans, Policies and Operations)' : g === 5 ? 'Branch Head, Headquarters Marine Corps' : g === 6 ? 'Division Head, Headquarters Marine Corps' : 'Deputy Director, Headquarters Marine Corps' });
+  add({ k:'ssf', org:'Service headquarters', a:'the Office of the Chief of Space Operations (Space Staff)', seal:'', g:[4, 7], svc:['ussf'], badge:'ssid', t:g => g <= 4 ? 'Action Officer, the Space Staff, the Pentagon' : g === 5 ? 'Branch Chief, the Space Staff, the Pentagon' : g === 6 ? 'Division Chief, the Space Staff, the Pentagon' : 'Deputy Director, the Space Staff, the Pentagon' });
+}catch(e){ console.error('v194 jobs', e); } })();
+/* which staff badges the current post carries */
+function staffIds194(M){ const k = (M.post && M.post.k) || ''; const w = new Set();
+  if(/^(jcs:|js:)/.test(k) || k === 'dj' || k === 'ic:j2') w.add('jcsid'); if(k.startsWith('osd:')) w.add('osdid'); if(k === 'jcs:csa') w.add('arstaff'); if(k === 'jcs:csaf') w.add('hafid');
+  if(k.startsWith('jx:')){ const J = JOBS189.find(j => j.k === k.slice(3)); if(J && J.badge && STAFFID194.concat(['ssid']).includes(J.badge)) w.add(J.badge); }
+  return [...w]; }
+function idSync194(M){ try{ M.idS = M.idS || {}; M.idPerm = M.idPerm || {}; const want = staffIds194(M);
+  want.forEach(k => { if(M.idS[k] == null) M.idS[k] = G.turn; if(G.turn - M.idS[k] >= 12) M.idPerm[k] = true; if(!M.bd.includes(k)){ M.bd.push(k); offHist('Wears the ' + BDG[k][0] + (M.idPerm[k] ? '.' : ' (permanent after a year in the assignment).')); } });
+  STAFFID194.concat(['ssid']).forEach(k => { if(want.includes(k)) return; if(M.idS[k] != null && !M.idPerm[k] && M.bd.includes(k)){ M.bd = M.bd.filter(x => x !== k); offHist('Left the assignment before a year: the ' + BDG[k][0] + ' is not kept.'); } delete M.idS[k]; });
+  /* the current assignment's badge is worn first */ const cur = M.bd.filter(k => want.includes(k)); if(cur.length) M.bd = cur.concat(M.bd.filter(k => !cur.includes(k))); }catch(e){ console.error(e); } }
+awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ idSync194(awE()); }catch(e){} return r; }; })(awBadges);
+offMonth = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()) idSync194(offE()); }catch(e){} return r; }; })(offMonth);
+if(typeof jobStep189 === 'function') jobStep189 = (function(f){ return function(M){ const was = M.post && M.post.k; const r = f.apply(this, arguments); try{ if(M.post && M.post.k !== was) idSync194(M); }catch(e){} return r; }; })(jobStep189);
+offAssign = (function(f){ return function(){ const r = f.apply(this, arguments); try{ if(isOff()) idSync194(offE()); }catch(e){} return r; }; })(offAssign);
 
 boot();
 </script>
