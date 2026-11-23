@@ -26783,6 +26783,17 @@ try{ if(typeof LABLOGO !== 'undefined' && LABLOGO.nasa && !SEAL.NASA) SEAL.NASA 
 try{ const W = { nasa:'NASA', socom:'SOCOM', hqmc:'USMC', ssf:'USSF', sda:'USSF' }; (typeof JOBS189 !== 'undefined' ? JOBS189 : []).forEach(J => { if(W[J.k] && SEAL[W[J.k]] && !(J.seal && SEAL[J.seal])) J.seal = W[J.k]; }); }catch(e){ console.error(e); }
 offSeal196 = (function(f){ return function(M){ try{ M = M || offE(); const k = (M && M.post && M.post.k) || ''; if(k === 'jx:acad'){ const s = { army:'ARMY', navy:'NAVY', usmc:'NAVY', af:'USAF', ussf:'USAF' }[M.svc]; if(s && SEAL[s]) return s; } }catch(e){} return f.apply(this, arguments); }; })(offSeal196);
 
+/* ===== v208 · The combatant command badge is always the command's own emblem.
+   - Staff officers assigned to a combatant command headquarters (e.g. "Plans officer, U.S. Indo-Pacific Command") and the SOCOM
+     headquarters detail now earn that command's badge, not just commanders and J-directors.
+   - A combatant command badge with no command on record is never drawn as a blank placeholder. ===== */
+function ccOfPost208(M){ const k = (M.post && M.post.k) || ''; const t = (M.post && M.post.title) || ''; if(k.startsWith('cc:')) return k.slice(3); const m = k.match(/^ccj:([A-Z]+):/); if(m) return m[1]; if(k === 'jx:socom') return 'SOCOM';
+  for(const cc of Object.keys(COCOM)){ const n = COCOM[cc].n; if(n && t.includes(n)) return cc; } return null; }
+awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ const M = awE(); if(!M || !isOff()) return r; const cc = ccOfPost208(M);
+  if(cc && SEAL[cc] && cc !== 'CYBERCOM'){ if(M.ccid !== cc){ M.ccid = cc; M.bd = M.bd.filter(x => x !== 'ccid'); } if(!M.bd.includes('ccid')) badge('ccid', quiet); }
+  if(M.bd.includes('ccid') && !(M.ccid && SEAL[M.ccid])) M.bd = M.bd.filter(x => x !== 'ccid'); }catch(e){ console.error(e); } return r; }; })(awBadges);
+badgeSVG = (function(f){ return function(k, cx, cy, sc){ if(k === 'ccid'){ try{ const M = isOff() ? offE() : null; if(!(M && M.ccid && SEAL[M.ccid])) return ''; }catch(e){ return ''; } } return f.apply(this, arguments); }; })(badgeSVG);
+
 boot();
 </script>
 </body></html>
