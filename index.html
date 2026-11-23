@@ -26776,6 +26776,13 @@ function gradeFix206(){ try{ if(!(G && G.player && isOff())) return; const M = o
 offMonth = (function(f){ return function(){ gradeFix206(); return f.apply(this, arguments); }; })(offMonth);
 render = (function(f){ return function(){ if(UI && UI.screen === 'game') gradeFix206(); return f.apply(this, arguments); }; })(render);
 
+/* ===== v207 · Use the emblems already in the game where they were not wired:
+   NASA (the lab-logo set), SOCOM, Headquarters Marine Corps (Marine Corps seal), the Space Staff and the Space Development Agency
+   (Space Force seal: the SDA has been part of the Space Force since 2022), the service academies (their service's seal). ===== */
+try{ if(typeof LABLOGO !== 'undefined' && LABLOGO.nasa && !SEAL.NASA) SEAL.NASA = LABLOGO.nasa; }catch(e){}
+try{ const W = { nasa:'NASA', socom:'SOCOM', hqmc:'USMC', ssf:'USSF', sda:'USSF' }; (typeof JOBS189 !== 'undefined' ? JOBS189 : []).forEach(J => { if(W[J.k] && SEAL[W[J.k]] && !(J.seal && SEAL[J.seal])) J.seal = W[J.k]; }); }catch(e){ console.error(e); }
+offSeal196 = (function(f){ return function(M){ try{ M = M || offE(); const k = (M && M.post && M.post.k) || ''; if(k === 'jx:acad'){ const s = { army:'ARMY', navy:'NAVY', usmc:'NAVY', af:'USAF', ussf:'USAF' }[M.svc]; if(s && SEAL[s]) return s; } }catch(e){} return f.apply(this, arguments); }; })(offSeal196);
+
 boot();
 </script>
 </body></html>
