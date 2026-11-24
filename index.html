@@ -27382,6 +27382,14 @@ award = (function(f){ return function(k, why, opts){ const r = f.apply(this, arg
   if(d && d.op){ M.awC = Object.assign(M.awC || {}, { [id]:true }); }
   else if(['rpa', 'cyb', 'isr', 'ew', 'io', 'msl', 'ops', 'cw'].includes(fk) && M.aw.rcecm){ M.awR = Object.assign(M.awR || {}, { [id]:true }); } } } }catch(e){ console.error(e); } return r; }; })(award);
 
+/* ===== v226 · Other federal agencies' decorations on the uniform.
+   Decorations from other federal agencies (CIA, ODNI, NRO, State Department) are worn on the uniform after U.S. military decorations and
+   unit awards and before the service medals (AR 600-8-22 and DA PAM 670-1, “U.S. non-military decorations”; DoDM 1348.33). Those not on the
+   Army's list are worn by date of receipt, in the agency's own order. Still not worn: the Congressional Gold Medal (a medal with no ribbon),
+   the two Defense public service medals (for civilians), and the Intelligence Community Expeditionary Service Medal (not a decoration). ===== */
+(function(){ try{ const P226 = { nicross:23.38, nimv:23.39, nrodsm:23.49, dic:23.53, istar:23.54, dim:23.55, cim:23.56, icom:23.57, stsha:23.58, stmha:23.59 };
+  Object.keys(P226).forEach(k => { if(AWD[k]){ delete AWD[k].nw; AWD[k][0] = P226[k]; } }); }catch(e){ console.error(e); } })();
+
 boot();
 </script>
 </body></html>
