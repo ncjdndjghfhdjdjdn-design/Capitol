@@ -27238,6 +27238,14 @@ offBillet = (function(f){ return function(svc, home, g){ const B = f.apply(this,
   const unit = pick[2] && ORB[pick[2]] ? pick[2] : /\{div\}/.test(pick[0]) ? div : /\{bde\}/.test(pick[0]) ? bde : /\{wing\}/.test(pick[0]) ? wing : /\{grp\}/.test(pick[0]) ? grp : /\{bn\}/.test(pick[0]) ? bn : B.unit;
   return Object.assign({}, B, { title, unit, k:'x222:' + unit + ':' + G.turn }); }catch(e){ console.error(e); return B; } }; })(offBillet);
 
+/* ===== v223 · The National Intelligence Superior Service Medal ribbon, measured from the official ribbon image: navy blue with two thin
+   gold stripes near each edge, and a center of white (silver) around a crimson stripe. Cyberspace badges keep only the highest level
+   (basic, senior, master), as wings do. ===== */
+Object.assign(RC_, { NiN:'#00184f', NiG:'#c9a000', NiW:'#e3e5e8', NiR:'#8b0923' });
+if(AWD.nissm) AWD.nissm[2] = sym([['NiN', 4], ['NiG', 2], ['NiN', 2], ['NiG', 2], ['NiN', 26], ['NiW', 6]], 'NiR');
+if(typeof FAM211 !== 'undefined') FAM211.push(['cyber', 'scyber', 'mcyber']);
+awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ const M = awE(); const L = ['mcyber', 'scyber', 'cyber']; const top = L.find(k => M.bd.includes(k)); if(top) M.bd = M.bd.filter(k => !L.includes(k) || k === top); }catch(e){} return r; }; })(awBadges);
+
 boot();
 </script>
 </body></html>
