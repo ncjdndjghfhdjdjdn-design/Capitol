@@ -25210,7 +25210,7 @@ unifSVG = function(){ const M = awE(); const pl = P(); const U = UNIF[M.svc] || 
   if(sv === 'army'){ const g1 = breast.filter(k => ['cib', 'cmb', 'cab'].includes(k)), g2 = breast.filter(k => ['eib', 'efmb', 'esb'].includes(k)), g3 = breast.filter(k => ['mpara', 'spara', 'para', 'mmff', 'mff', 'mavb', 'avb', 'savb', 'meodb', 'seodb', 'eodb', 'aaslt', 'pathf'].includes(k)); const lead = g1[0] || g2[0]; const L = (lead ? [lead] : []).concat(g3); L.slice(0, 3).forEach(k => above.push(k)); L.slice(3).forEach(k => flap.push(k)); }
   else if(sv === 'navy'){ const w = breast.filter(k => ['seal', 'dolph', 'nav', 'nfo', 'swo', 'iw'].includes(k)); if(w[0]) above.push(w[0]); const ff = breast.filter(k => ['mmff', 'mff', 'gpara'].includes(k)); /* a SEAL wears the trident above the ribbons and parachute or free-fall wings below */ if(ff[0]) below.push(ff[0]); else if(w[1]) below.push(w[1]); }
   else if(sv === 'usmc'){ breast.filter(k => ['mnav', 'nav', 'mso', 'mmff', 'mff', 'gpara'].includes(k)).slice(0, 2).forEach(k => above.push(k)); breast.filter(k => ['rifle', 'pistol'].includes(k)).forEach(k => below.push(k)); }
-  else { const aero = k => ['pilot', 'spilot', 'cpilot', 'space', 'sspace'].includes(k) ? 1 : 0; breast.filter(k => !/^(s|m)?missile$|^sfsb$/.test(k)).slice().sort((a, b) => aero(a) - aero(b)).slice(-2).forEach(k => above.push(k)); }
+  else { const aero = k => ['pilot', 'spilot', 'cpilot', 'space', 'sspace', 'mspace', 'cso', 'scso', 'mcso', 'abm', 'sabm', 'mabm', 'rpa'].includes(k) ? 1 : 0; breast.filter(k => !/^(s|m)?missile$|^sfsb$/.test(k)).slice().sort((a, b) => aero(a) - aero(b)).slice(-2).forEach(k => above.push(k)); }
   const gapA = (sv === 'af' || sv === 'ussf') ? 0.5*UIN : 0.25*UIN, gapB = (sv === 'af' || sv === 'ussf') ? 0.5*UIN : 0.5*UIN; let yA = top - gapA;
   /* v211: never stack badges into the shoulder; badges that do not fit above the ribbons go to the pocket flap (Army) or below the ribbons */ { const room = () => top - gapA - 138; const need = () => above.reduce((a, k) => a + bdgHeight(k), 0) + Math.max(0, above.length - 1)*gapB; while(above.length > 1 && need() > room()){ const wing = k => (BDG[k] || [])[2] === 'wing' || /pilot|avb|nav|mff|para/.test(k); let i = above.length - 1; for(let j = above.length - 1; j > 0; j--){ if(!wing(above[j])){ i = j; break; } } const k = above.splice(i, 1)[0]; if(sv === 'army' && pocket) flap.unshift(k); else below.unshift(k); } }
   /* drawn from the ribbons upward: the last in precedence sits closest to the ribbons */ above.slice().reverse().forEach(k => { const h = bdgHeight(k); put(k, cxL, yA - h/2, -1); yA -= h + gapB; });
@@ -27102,7 +27102,7 @@ document.addEventListener('click', e => { if(!G || UI.screen !== 'game') return;
    a flying wing's squadrons (the intelligence flight of its operations support squadron) */
 (function(){ try{ const desc = (H, ech) => ORBK.filter(id => ORB[id].e === ech && id !== H && orbChain(id).includes(H));
   Object.keys(U220).forEach(sv => Object.keys(U220[sv]).forEach(k => { const F = (FLD[sv] || []).find(x => x.k === k); if(!F) return; const extra = new Set(U220[sv][k] || []);
-    const own = H => { const fb = (F.bn ? F.bn(H) : []) || []; const fq = (F.sq ? F.sq(H) : []) || []; return fb.concat(fq).some(id => id === H || orbChain(id).includes(H)); };
+    const bn0 = F.bn, sq0 = F.sq; const own = H => { const fb = (bn0 ? bn0(H) : []) || []; const fq = (sq0 ? sq0(H) : []) || []; return fb.concat(fq).some(id => id === H || orbChain(id).includes(H)); };
     if(F.bn){ const o = F.bn; F.bn = function(H){ if(extra.has(H) && !own(H)){ const L = desc(H, 'bn'); if(L.length) return L; } return o.apply(this, arguments); }; }
     if(F.bde){ const o = F.bde; F.bde = function(H){ if(extra.has(H)){ const L = desc(H, 'bde'); const fbn = F.bn ? F.bn(H) : []; if(L.length && !(o.apply(this, arguments) || []).some(id => orbChain(id).includes(H))) return L; } return o.apply(this, arguments); }; }
     if(F.sq){ const o = F.sq; F.sq = function(H){ const r = o.apply(this, arguments) || []; if(extra.has(H) && !r.some(id => id === H || orbChain(id).includes(H))){ const L = desc(H, 'sqn').concat(desc(H, 'bn')); if(L.length) return L; } return r; }; } })); }catch(e){ console.error(e); } })();
@@ -27228,7 +27228,7 @@ const P222 = {
     6:[['Executive Officer to the Chief of Space Operations'], ['Vice Commander, a field command']] } };
 const isCmd222 = t => /^(Commander|Commanding Officer|Commodore|Squadron Commander|Delta Commander)\b/.test(t || '');
 function up222(id, ech){ const L = [id].concat(orbChain(id).slice().reverse()); return L.find(x => ORB[x] && (Array.isArray(ech) ? ech.includes(ORB[x].e) : ORB[x].e === ech)); }
-offBillet = (function(f){ return function(svc, home, g){ const B = f.apply(this, arguments); try{ if(!B || !B.unit || !P() || !P().mil || g >= 7 || !P222[svc] || !P222[svc][g]) return B; const M = P().mil; if(M.comp && M.comp !== 'ac') return B; const F = fldOf(M); const fk = F ? F.k : (svc === 'navy' ? 'swo' : svc === 'af' ? 'pil' : svc === 'ussf' ? 'ops' : 'inf');
+offBillet = (function(f){ return function(svc, home, g){ const B = f.apply(this, arguments); try{ if(!B || !B.unit || !P() || !P().mil || g >= 7 || !P222[svc] || !P222[svc][g]) return B; const M = P().mil; if(M.comp && M.comp !== 'ac') return B; const F = fldOf(M); if(F && F.no222) return B; const fk = F ? F.k : (svc === 'navy' ? 'swo' : svc === 'af' ? 'pil' : svc === 'ussf' ? 'ops' : 'inf');
   if(svc === 'usmc' && /Platoon Leader/.test(B.title)) B.title = B.title.replace('Platoon Leader', 'Platoon Commander');
   const h = orbH(P().name + '|' + G.turn + '|' + g + '|' + fk); const cmd = isCmd222(B.title); if(cmd ? h > 0.35 : h > 0.6) return B;
   const pool = P222[svc][g].filter(x => !x[1] || x[1].test(fk)); if(!pool.length) return B; const pick = pool[Math.floor(orbH(P().name + 'p' + G.turn + g)*pool.length)];
@@ -27245,6 +27245,86 @@ Object.assign(RC_, { NiN:'#00184f', NiG:'#c9a000', NiW:'#e3e5e8', NiR:'#8b0923' 
 if(AWD.nissm) AWD.nissm[2] = sym([['NiN', 4], ['NiG', 2], ['NiN', 2], ['NiG', 2], ['NiN', 26], ['NiW', 6]], 'NiR');
 if(typeof FAM211 !== 'undefined') FAM211.push(['cyber', 'scyber', 'mcyber']);
 awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ const M = awE(); const L = ['mcyber', 'scyber', 'cyber']; const top = L.find(k => M.bd.includes(k)); if(top) M.bd = M.bd.filter(k => !L.includes(k) || k === top); }catch(e){} return r; }; })(awBadges);
+
+/* ===== v224 · Combat Systems Officer wings (basic, senior, master) for Air Force electromagnetic warfare; the Information Operations badge;
+   PSYOP, Civil Affairs and information units in the order of battle (4th POG battalions, 95th CA battalions, USACAPOC(A), the TIADs, MCIOC)
+   and Information Operations career fields for the Army (FA30), Marine Corps (1707) and Air Force (14F). ===== */
+const IMG224 = {"cso": [__I[449], 300, 96], "scso": [__I[450], 300, 116], "mcso": [__I[451], 300, 134], "iob": [__I[452], 240, 110]};
+/* ---------- Combat Systems Officer wings (12X / electromagnetic warfare) and the Information Operations badge (14F) ---------- */
+(function(){ try{ Object.assign(BADGEIMG, IMG224);
+  Object.assign(BDG, { cso:['Combat Systems Officer Badge', 'af', 'wing'], scso:['Senior Combat Systems Officer Badge', 'af', 'wing'], mcso:['Master Combat Systems Officer Badge', 'af', 'wing'], iob:['Information Operations Badge', 'af', 'skill'] });
+  Object.assign(BIMGK, { cso:'cso', scso:'scso', mcso:'mcso', iob:'iob' });
+  Object.assign(BDGW, { cso:3.2, scso:3.2, mcso:3.2, iob:2.75 });
+  FAM211.push(['cso', 'scso', 'mcso']); }catch(e){ console.error(e); } })();
+const fk224 = M => { const F = fldOf(M); return F ? F.k : ''; };
+bdgElig = (function(f){ return function(k, M){ try{ if(['cso', 'scso', 'mcso'].includes(k)) return M.svc === 'af' && fk224(M) === 'ew'; if(k === 'iob') return M.svc === 'af' && fk224(M) === 'io'; }catch(e){} return f.apply(this, arguments); }; })(bdgElig);
+awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ const M = awE(); if(!isOff() || M.out) return r; const fk = fk224(M); const yos = offYos(M);
+  if(M.svc === 'af' && fk === 'ew') badge(yos >= 15 ? 'mcso' : yos >= 7 ? 'scso' : 'cso', quiet);
+  if(M.svc === 'af' && fk === 'io') badge('iob', quiet);
+  const L = ['mcso', 'scso', 'cso']; const top = L.find(k => M.bd.includes(k)); if(top) M.bd = M.bd.filter(k => !L.includes(k) || k === top); }catch(e){ console.error(e); } return r; }; })(awBadges);
+
+/* ---------- order of battle: PSYOP, Civil Affairs, Army Reserve USACAPOC, Theater Information Advantage Detachments, Marine IO ---------- */
+(function(){ try{ const U = (id, n, p, e, k, b, h, x) => { if(!ORB[id] && ORB[p]) O(id, n, p, e, k, b, h, x); return id; };
+  /* 4th POG(A): regionally aligned battalions */
+  [['1pob', '1st Psychological Operations Battalion (Airborne)', 'SOUTHCOM'], ['5pob', '5th Psychological Operations Battalion (Airborne)', 'INDOPACOM'], ['6pob', '6th Psychological Operations Battalion (Airborne)', 'EUCOM'], ['8pob', '8th Psychological Operations Battalion (Airborne)', 'CENTCOM']].forEach(([id, n, cc]) => U(id, n, '4pog', 'bn', 'psy', 'Army', 'Fort Bragg, NC', { sz:220, eq:'Regionally aligned to ' + cc + '.' }));
+  U('7pob', '7th Psychological Operations Battalion (Airborne)', '3sfg', 'bn', 'psy', 'Army', 'Fort Bragg, NC', { sz:220, eq:'Aligned to AFRICOM; assigned to the 3rd Special Forces Group.' });
+  /* 8th POG(A) was inactivated on 29 Sept 2026 */
+  const g8 = ORB['8pog']; if(g8 && !/inactivated/.test(g8.n)){ g8.n = '8th Psychological Operations Group (Airborne) — inactivated Sept. 2026'; g8.sz = 0; g8.eq = 'Cased its colors at Fort Bragg on 29 Sept 2026. Its 3rd and 9th PSYOP Battalions were moved; their new parent had not been announced.'; }
+  U('3pob', '3rd Psychological Operations Battalion (Airborne) (dissemination)', '1sfc', 'bn', 'psy', 'Army', 'Fort Bragg, NC', { sz:250, eq:'Formerly of the 8th POG; new parent unit not yet announced.' });
+  U('9pob', '9th Psychological Operations Battalion (Airborne) (tactical)', '1sfc', 'bn', 'psy', 'Army', 'Fort Bragg, NC', { sz:250, eq:'Formerly of the 8th POG; new parent unit not yet announced.' });
+  /* 95th CA Brigade(A): one battalion per geographic combatant command */
+  [['91cab', '91st', 'AFRICOM'], ['92cab', '92nd', 'EUCOM'], ['96cab', '96th', 'CENTCOM'], ['97cab', '97th', 'INDOPACOM'], ['98cab', '98th', 'SOUTHCOM']].forEach(([id, n, cc]) => U(id, n + ' Civil Affairs Battalion (Airborne)', '95ca', 'bn', 'ca', 'Army', 'Fort Bragg, NC', { sz:220, eq:'Regionally aligned to ' + cc + '.' }));
+  /* Army Reserve: USACAPOC(A) */
+  if(!ORB.usacapoc && ORB.usarc){ U('usacapoc', 'U.S. Army Civil Affairs and Psychological Operations Command (Airborne)', 'usarc', 'div', 'ca', 'Army', 'Fort Bragg, NC', { ab:'USACAPOC(A)', sz:12000, eq:'Most of the Army’s Civil Affairs and PSYOP forces are in the Army Reserve.' });
+    if(typeof RCU !== 'undefined') RCU.usacapoc = { c:'rc', st:'NC' };
+    U('350cacom', '350th Civil Affairs Command', 'usacapoc', 'div', 'ca', 'Army', 'Pensacola, FL', { sz:1800, cc:'SOUTHCOM' });
+    U('351cacom', '351st Civil Affairs Command', 'usacapoc', 'div', 'ca', 'Army', 'Mountain View, CA', { sz:1800, cc:'INDOPACOM' });
+    U('352cacom', '352nd Civil Affairs Command', 'usacapoc', 'div', 'ca', 'Army', 'Fort Meade, MD', { sz:1800, cc:'CENTCOM' });
+    U('353cacom', '353rd Civil Affairs Command', 'usacapoc', 'div', 'ca', 'Army', 'Staten Island, NY', { sz:1800, cc:'EUCOM' });
+    U('321cab', '321st Civil Affairs Brigade', '350cacom', 'bde', 'ca', 'Army', 'San Antonio, TX', { sz:600 });
+    U('1trngbde', '1st Training Brigade (CA/PSYOP)', '350cacom', 'bde', 'ca', 'Army', 'Fort Bragg, NC', { sz:300 });
+    U('151tiog', '151st Theater Information Operations Group', '350cacom', 'grp', 'psy', 'Army', 'Fort Totten, NY', { sz:300 });
+    U('358cab', '358th Civil Affairs Brigade', '351cacom', 'bde', 'ca', 'Army', 'Riverside, CA', { sz:600 });
+    U('364cab', '364th Civil Affairs Brigade', '351cacom', 'bde', 'ca', 'Army', 'Happy Valley, OR', { sz:600 });
+    U('7pog', '7th Psychological Operations Group (Airborne)', '351cacom', 'grp', 'psy', 'Army', 'Mountain View, CA', { sz:700 });
+    U('354cab', '354th Civil Affairs Brigade', '352cacom', 'bde', 'ca', 'Army', 'Riverdale Park, MD', { sz:600 });
+    U('360cab', '360th Civil Affairs Brigade', '352cacom', 'bde', 'ca', 'Army', 'Fort Jackson, SC', { sz:600 });
+    U('2pog', '2nd Psychological Operations Group (Airborne)', '352cacom', 'grp', 'psy', 'Army', 'Twinsburg, OH', { sz:700 });
+    U('304cab', '304th Civil Affairs Brigade', '353cacom', 'bde', 'ca', 'Army', 'Philadelphia, PA', { sz:600 });
+    U('308cab', '308th Civil Affairs Brigade', '353cacom', 'bde', 'ca', 'Army', 'Homewood, IL', { sz:600 }); }
+  /* Theater Information Advantage Detachments (replacing the 1st Information Operations Command) */
+  U('1tiad', '1st Theater Information Advantage Detachment', 'usarpac', 'bn', 'cyb', 'Army', 'Fort Shafter, HI', { sz:90, cc:'INDOPACOM', eq:'Information advantage for U.S. Army Pacific.' });
+  U('2tiad', '2nd Theater Information Advantage Detachment', 'arcyber', 'bn', 'cyb', 'Army', 'Fort Gordon, GA', { sz:90, eq:'Information advantage for the theater armies.' });
+  U('3tiad', '3rd Theater Information Advantage Detachment', 'usareur', 'bn', 'cyb', 'Army', 'Wiesbaden, Germany', { sz:90, cc:'EUCOM', eq:'Information advantage for U.S. Army Europe and Africa.' });
+  /* Marine Corps */
+  U('mcioc', 'Marine Corps Information Operations Center', 'marforcyber', 'grp', 'cyb', 'Marine Corps', 'Quantico, VA', { sz:300, eq:'Influence, military deception and information planning support to the MEFs.' });
+}catch(e){ console.error(e); } })();
+
+/* ---------- career fields: PSYOP and Civil Affairs battalions; new Information Operations fields ---------- */
+(function(){ try{ const kidsOf = (H, ech) => ORBK.filter(id => ORB[id] && ech.includes(ORB[id].e) && (ORB[id].p === H || orbChain(id).includes(H)));
+  const psy = (FLD.army || []).find(x => x.k === 'psy');
+  if(psy){ psy.d = 'Influence operations with the 4th Psychological Operations Group (Airborne) and its regionally aligned battalions (the 8th Group was inactivated in Sept. 2026).'; psy.home = '4pog'; psy.homes = () => ['4pog'];
+    psy.bn = H => { const L = kidsOf(ORB[H] ? H : '4pog', ['bn']); return L.length ? L : ['1pob', '5pob', '6pob', '8pob'].filter(id => ORB[id]); }; psy.bde = () => ['4pog'];
+    psy.t = ['Detachment Commander, {u}', 'Company Commander, {u}', 'Operations Officer (S-3), {u}', 'Commander, {u}']; }
+  const ca = (FLD.army || []).find(x => x.k === 'ca');
+  if(ca){ ca.d = 'Civil-military operations with the 95th Civil Affairs Brigade (Airborne) and its five regionally aligned battalions.'; 
+    ca.bn = function(H){ const L = kidsOf(ORB[H] ? H : '95ca', ['bn']).filter(id => ORB[id].k === 'ca'); return L.length ? L : kidsOf('95ca', ['bn']); }; ca.bde = () => ['95ca'];
+    ca.t = ['Civil Affairs Team Leader, {c} Company, {u}', 'Civil Affairs Company Commander, {u}', 'Operations Officer (S-3), {u}', null]; }
+  const add = (svc, F) => { if(FLD[svc] && !FLD[svc].some(x => x.k === F.k)) FLD[svc].push(F); };
+  const TIAD = ['1tiad', '2tiad', '3tiad'].filter(id => ORB[id]);
+  const divs = ORBK.filter(id => ORB[id] && ORB[id].b === 'Army' && ORB[id].e === 'div' && /Infantry|Armored|Cavalry|Airborne|Mountain/.test(ORB[id].n) && !(typeof rcOf === 'function' && rcOf(id)) && !/National Guard/.test(ORB[id].n));
+  add('army', { k:'io', no222:1, code:'FA30', n:'Information Operations', d:'Functional Area 30: the theater information advantage detachments and the division G-39 information cells.', w:{ WK:2, AR:1 }, line:'ST', minG:3, home:TIAD[0] || 'arcyber', homes:() => TIAD.concat(divs),
+    bn:H => [ORB[H] ? H : TIAD[0]], bde:H => TIAD.includes(H) ? [H] : TIAD, top:'arcyber',
+    t:['Information Operations Officer, {u}', 'Information Operations Planner (G-39), {u}', 'Chief of Information Operations (G-39), {u}', 'Deputy Commander for Information, {u}'] });
+  const MIG = ORBK.filter(id => ORB[id] && /MEF Information Group/.test(ORB[id].n));
+  add('usmc', { k:'io', code:'1707', n:'Influence Officer (Information Maneuver)', d:'The 17XX information maneuver field: the Marine Corps Information Operations Center and the MEF Information Groups.', w:{ WK:2, AR:1 }, line:'GT', home:'mcioc', homes:() => ['mcioc'].concat(MIG).filter(id => ORB[id]),
+    bn:H => [ORB[H] ? H : 'mcioc'], bde:H => [ORB[H] ? H : 'mcioc'], top:'marforcyber',
+    t:['Influence Officer, {u}', 'Information Maneuver Planner, {u}', 'Operations Officer, {u}', 'Executive Officer, {u}'] });
+  const sqs = H => ORBK.filter(id => ORB[id] && ORB[id].e === 'sqn' && orbChain(id).includes(H) && ['cyb', 'isr', 'ew', 'mi'].includes(ORB[id].k));
+  add('af', { k:'io', code:'14F', n:'Information Operations', d:'Air Force information operations officers (14F) in the Sixteenth Air Force (Air Forces Cyber): military deception, influence and operations security planning.', w:{ WK:1, AR:1, MK:1 }, line:'AFOQT', home:'16af', homes:() => ['16af'],
+    bn:H => { const L = sqs(ORB[H] ? H : '16af'); return L.length ? L : ['16af']; }, sq:H => { const L = sqs(ORB[H] ? H : '16af'); return L.length ? L : ['16af']; }, top:'16af',
+    t:['Information Operations Officer, {u}', 'Flight Commander, {u}', 'Assistant Director of Operations, {u}', null] });
+}catch(e){ console.error(e); } })();
 
 boot();
 </script>
