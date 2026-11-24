@@ -25207,7 +25207,7 @@ unifSVG = function(){ const M = awE(); const pl = P(); const U = UNIF[M.svc] || 
   const put = (k, x, y, dir) => { const h = bdgHeight(k), w = bdgWidth(k); let cx = x, cy = y; for(let n = 0; n < 60; n++){ /* never past the coat's outer edge (the side seam under the arm) or below the hem */ const yt = cy - h/2, yb = cy + h/2; const OE = Math.max(yt < 206 ? 92 + Math.max(0, yt - 118)/88*18 : 110, yb < 206 ? 92 + Math.max(0, yb - 118)/88*18 : 110) + 4; if(cx - w/2 < OE) cx = OE + w/2; if(cx + w/2 > 420 - OE) cx = 420 - OE - w/2; if(yb > 466 && dir > 0) break; const L = x > 210 ? lapX(cy - h/2) + 3 : null, Rr = x < 210 ? 420 - lapX(cy - h/2) - 3 : null; if(L != null && cx - w/2 < L) cx = L + w/2; if(Rr != null && cx + w/2 > Rr) cx = Rr - w/2; /* the side seam wins over the lapel: the lapel is drawn over badges, the edge of the coat is not */ if(cx - w/2 < OE) cx = OE + w/2; if(cx + w/2 > 420 - OE) cx = 420 - OE - w/2; const B = { x:cx - w/2, y:cy - h/2, w, h }; if(!boxes.some(b => hit(B, b))){ boxes.push(B); break; } cy += dir*3; } s += badgeSVG(k, cx, cy, bdgScale(k)); };
   const bd = (M.bd || []).filter(k => BDG[k] && k !== 'ranger'); const ident = bd.filter(k => BDG[k][2] === 'id' && !['cas', 'cash'].includes(k)); const cmdPin = bd.filter(k => ['cas', 'cash'].includes(k)); const breast = bd.filter(k => BDG[k][2] !== 'id');
   const above = [], below = [], flap = []; const top = bottom - rows.length*rh;
-  if(sv === 'army'){ const g1 = breast.filter(k => ['cib', 'cmb', 'cab'].includes(k)), g2 = breast.filter(k => ['eib', 'efmb', 'esb'].includes(k)), g3 = breast.filter(k => ['mpara', 'spara', 'para', 'mmff', 'mff', 'mavb', 'avb', 'savb', 'meodb', 'seodb', 'eodb', 'aaslt', 'pathf'].includes(k)); const lead = g1[0] || g2[0]; const L = (lead ? [lead] : []).concat(g3); L.slice(0, 3).forEach(k => above.push(k)); L.slice(3).forEach(k => flap.push(k)); }
+  if(sv === 'army'){ const g1 = breast.filter(k => ['cib', 'cmb', 'cab'].includes(k)), g2 = breast.filter(k => ['eib', 'efmb', 'esb'].includes(k)), g3 = breast.filter(k => ['mpara', 'spara', 'para', 'mmff', 'mff', 'mavb', 'avb', 'savb', 'meodb', 'seodb', 'eodb', 'aaslt', 'pathf', 'rigger'].includes(k)); const lead = g1[0] || g2[0]; const L = (lead ? [lead] : []).concat(g3); L.slice(0, 3).forEach(k => above.push(k)); L.slice(3).forEach(k => flap.push(k)); }
   else if(sv === 'navy'){ const w = breast.filter(k => ['seal', 'dolph', 'nav', 'nfo', 'swo', 'iw'].includes(k)); if(w[0]) above.push(w[0]); const ff = breast.filter(k => ['mmff', 'mff', 'gpara'].includes(k)); /* a SEAL wears the trident above the ribbons and parachute or free-fall wings below */ if(ff[0]) below.push(ff[0]); else if(w[1]) below.push(w[1]); }
   else if(sv === 'usmc'){ breast.filter(k => ['mnav', 'nav', 'mso', 'mmff', 'mff', 'gpara'].includes(k)).slice(0, 2).forEach(k => above.push(k)); breast.filter(k => ['rifle', 'pistol'].includes(k)).forEach(k => below.push(k)); }
   else { const aero = k => ['pilot', 'spilot', 'cpilot', 'space', 'sspace', 'mspace', 'cso', 'scso', 'mcso', 'abm', 'sabm', 'mabm', 'rpa'].includes(k) ? 1 : 0; breast.filter(k => !/^(s|m)?missile$|^sfsb$/.test(k)).slice().sort((a, b) => aero(a) - aero(b)).slice(-2).forEach(k => above.push(k)); }
@@ -27325,6 +27325,62 @@ awBadges = (function(f){ return function(quiet){ const r = f.apply(this, argumen
     bn:H => { const L = sqs(ORB[H] ? H : '16af'); return L.length ? L : ['16af']; }, sq:H => { const L = sqs(ORB[H] ? H : '16af'); return L.length ? L : ['16af']; }, top:'16af',
     t:['Information Operations Officer, {u}', 'Flight Commander, {u}', 'Assistant Director of Operations, {u}', null] });
 }catch(e){ console.error(e); } })();
+
+/* ===== v225 · Ribbon devices drawn to regulation (oak leaf clusters, gold, silver and bronze stars, numerals, “E”, hourglass, “V”, “C”, “R”, “M”)
+   and the Parachute Rigger Badge. ===== */
+const IMG225 = {"olcB": [__I[453], 96, 58], "olcS": [__I[454], 96, 58], "rigger": [__I[455], 240, 88]};
+/* ---------- Parachute Rigger Badge (Quartermaster officers who are parachute qualified) ---------- */
+(function(){ try{ BADGEIMG.rigger = IMG225.rigger; BDG.rigger = ['Parachute Rigger Badge', 'army', 'skill']; BIMGK.rigger = 'rigger'; BDGW.rigger = 2.0; }catch(e){ console.error(e); } })();
+bdgElig = (function(f){ return function(k, M){ try{ if(k === 'rigger'){ const F = fldOf(M); return M.svc === 'army' && F && F.k === 'qm' && (M.bd || []).some(b => ['para', 'spara', 'mpara'].includes(b)); } }catch(e){} return f.apply(this, arguments); }; })(bdgElig);
+awBadges = (function(f){ return function(quiet){ const r = f.apply(this, arguments); try{ const M = awE(); if(!isOff() || M.out) return r; const F = fldOf(M); if(M.svc === 'army' && F && F.k === 'qm' && orbH(P().name + 'rig') < 0.45 && !(M.bd || []).some(x => ['para', 'spara', 'mpara'].includes(x))) badge(offYos(M) >= 7 ? 'spara' : 'para', quiet); if(bdgElig('rigger', M)) badge('rigger', quiet); }catch(e){ console.error(e); } return r; }; })(awBadges);
+
+/* ---------- ribbon devices, by the rules of each service ----------
+   Army, Air Force, Space Force: bronze oak leaf clusters, a silver cluster for every five.  Navy and Marine Corps: 5/16-inch gold stars,
+   a silver star for every five.  Joint decorations take oak leaf clusters whatever the service.  Campaign and service medals: 3/16-inch
+   bronze service stars (silver for five).  Army Air Medal and Overseas Service Ribbon: numerals.  Navy “E” Ribbon: “E” devices, wreathed
+   at the fourth award.  Armed Forces Reserve Medal: hourglass (bronze, silver, gold) and the “M” mobilization device.  “V” for valor,
+   “C” for meritorious service under combat conditions and “R” for remote combat effects. */
+const DEVNONE225 = new Set(['pmof', 'nidsm', 'nissm', 'nieam', 'nimuc', 'nsm', 'glsm', 'slsm', 'niam', 'nasadsm', 'nasasfm', 'nasabrav', 'nasaesm', 'dic', 'istar', 'dim', 'cim', 'icom', 'nicross', 'nimv', 'nrodsm', 'stsha', 'stmha', 'sdops', 'dodps', 'cgm', 'ngsad', 'asr', 'fmfr', 'nasr', 'moh']);
+const DEVJOINT225 = new Set(['ddsm', 'dssm', 'dmsm', 'jscm', 'jsam', 'jmua']);
+const DEVSVC225 = new Set(['ndsm', 'kdsm', 'afem', 'acm', 'icm', 'ircm', 'gwotem', 'gwotsm', 'hsm', 'movsm', 'afsm', 'rcecm', 'ndosm', 'icesm', 'antsm', 'nato', 'natomsm', 'ssdr', 'nmcosr', 'afsaem']);
+const DEVNAVYUNIT225 = new Set(['puc', 'muc', 'nuc']);
+const DEVCR225 = ['comA', 'comN', 'comF', 'achA', 'achN', 'achF', 'msm', 'lom', 'am'];
+function devStar225(cx, cy, r, fill, stroke){ let p = ''; for(let i = 0; i < 10; i++){ const a = -Math.PI/2 + i*Math.PI/5, rr = i % 2 ? r*0.42 : r; p += (i ? 'L' : 'M') + (cx + rr*Math.cos(a)).toFixed(2) + ' ' + (cy + rr*Math.sin(a)).toFixed(2); } return '<path d="' + p + 'Z" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + (r*0.12).toFixed(2) + '"/>'; }
+function devList225(id, n, svc, flags){ const out = []; const extra = Math.max(0, (n || 1) - 1); const navy = svc === 'navy' || svc === 'usmc';
+  ['V', 'C', 'R'].forEach(L => { if(flags[L]) out.push({ t:'L', L }); });
+  if(DEVNONE225.has(id)) return out;
+  const split = (c, big, small) => { const S = Math.floor(c/5), B = c % 5; for(let i = 0; i < Math.min(S, 4); i++) out.push({ t:big }); for(let i = 0; i < B; i++) out.push({ t:small }); };
+  if(id === 'am' && (svc === 'army' || navy)){ if(n >= 2) out.push({ t:'N', v:n, gold:navy }); return out; }
+  if(id === 'osr'){ if(n >= 2) out.push({ t:'N', v:n }); return out; }
+  if(id === 'nbe'){ if(n >= 4) out.push({ t:'EW' }); else for(let i = 0; i < extra; i++) out.push({ t:'E' }); return out; }
+  if(id === 'afrm'){ if(n >= 2) out.push({ t:'HG', c:n >= 4 ? 'gold' : n >= 3 ? 'silver' : 'bronze' }); if(flags.M) out.push({ t:'L', L:'M' }); return out; }
+  if(!extra) return out;
+  if(DEVJOINT225.has(id)) split(extra, 'olcS', 'olcB');
+  else if(DEVSVC225.has(id) || (navy && DEVNAVYUNIT225.has(id))) split(extra, 's3', 'b3');
+  else if(navy) split(extra, 's5', 'g5');
+  else split(extra, 'olcS', 'olcB');
+  return out; }
+function devSVG225(list, x, y, w, h){ if(!list.length) return ''; const W = d => d.t === 'olcS' || d.t === 'olcB' ? 1.12*h : d.t === 'g5' || d.t === 's5' ? 0.86*h : d.t === 's3' || d.t === 'b3' ? 0.56*h : d.t === 'N' ? 0.5*h*String(d.v).length + 0.1*h : d.t === 'EW' ? 0.9*h : d.t === 'HG' ? 0.7*h : 0.62*h; const gap = 0.06*h;
+  let tot = list.reduce((a, d) => a + W(d), 0) + gap*(list.length - 1); const k = Math.min(1, (w*0.94)/tot); tot *= k; let cx = x + w/2 - tot/2; let s = ''; const cy = y + h/2;
+  const BR = '#b9853f', BRS = '#5a3d10', SI = '#e4e7ec', SIS = '#5b6270', GO = '#e2b33b', GOS = '#7a5b12';
+  list.forEach(d => { const ww = W(d)*k, mid = cx + ww/2;
+    if(d.t === 'olcB' || d.t === 'olcS'){ const im = BADGEIMG[d.t === 'olcB' ? 'olcB225' : 'olcS225']; const hh = ww*im[2]/im[1]; s += '<image href="' + im[0] + '" x="' + cx.toFixed(2) + '" y="' + (cy - hh/2).toFixed(2) + '" width="' + ww.toFixed(2) + '" height="' + hh.toFixed(2) + '"/>'; }
+    else if(d.t === 'g5' || d.t === 's5' || d.t === 's3' || d.t === 'b3'){ const c = d.t === 'g5' ? [GO, GOS] : d.t === 'b3' ? [BR, BRS] : [SI, SIS]; s += devStar225(mid, cy + ww*0.04, ww/2, c[0], c[1]); }
+    else if(d.t === 'N'){ s += '<text x="' + mid.toFixed(2) + '" y="' + (y + h*0.84).toFixed(2) + '" font-size="' + (h*0.9*k).toFixed(2) + '" font-family="Georgia,serif" font-weight="700" fill="' + (d.gold ? GO : BR) + '" stroke="' + (d.gold ? GOS : BRS) + '" stroke-width=".25" text-anchor="middle">' + d.v + '</text>'; }
+    else if(d.t === 'E' || d.t === 'EW'){ if(d.t === 'EW') s += '<circle cx="' + mid.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + (ww*0.46).toFixed(2) + '" fill="none" stroke="' + SI + '" stroke-width="' + (h*0.09).toFixed(2) + '" stroke-dasharray="' + (h*0.12).toFixed(2) + ' ' + (h*0.05).toFixed(2) + '"/>'; s += '<text x="' + mid.toFixed(2) + '" y="' + (y + h*0.8).toFixed(2) + '" font-size="' + (h*0.72*k).toFixed(2) + '" font-family="Georgia,serif" font-weight="700" fill="' + SI + '" stroke="' + SIS + '" stroke-width=".25" text-anchor="middle">E</text>'; }
+    else if(d.t === 'HG'){ const c = d.c === 'gold' ? [GO, GOS] : d.c === 'silver' ? [SI, SIS] : [BR, BRS]; const a = ww*0.42, b = h*0.36*k; s += '<path d="M' + (mid - a) + ' ' + (cy - b) + 'H' + (mid + a) + 'L' + (mid + a*0.15) + ' ' + cy + 'L' + (mid + a) + ' ' + (cy + b) + 'H' + (mid - a) + 'L' + (mid - a*0.15) + ' ' + cy + 'Z" fill="' + c[0] + '" stroke="' + c[1] + '" stroke-width=".3"/>'; }
+    else { s += '<text x="' + mid.toFixed(2) + '" y="' + (y + h*0.82).toFixed(2) + '" font-size="' + (h*0.92*k).toFixed(2) + '" font-family="Georgia,serif" font-weight="900" fill="' + BR + '" stroke="' + BRS + '" stroke-width=".3" text-anchor="middle">' + d.L + '</text>'; }
+    cx += ww + gap*k; });
+  return s; }
+(function(){ try{ BADGEIMG.olcB225 = IMG225.olcB; BADGEIMG.olcS225 = IMG225.olcS; }catch(e){} })();
+ribSVG = (function(f){ return function(id, x, y, w, h, n, v, navy){ const base = f.call(this, id, x, y, w, h, 1, false, navy); if(!base || !AWD[id]) return base;
+  try{ let svc = navy ? 'navy' : 'army', M = null; try{ if(isOff()){ M = offE(); svc = M.svc; } }catch(e){} if(navy && svc !== 'usmc') svc = 'navy';
+    const flags = { V:!!v, C:!!(M && M.awC && M.awC[id]) && !v, R:!!(M && M.awR && M.awR[id]) && !v, M:!!(M && M.comp && M.comp !== 'ac' && Object.keys(M.aw || {}).some(k => ['gwotsm', 'gwotem', 'acm', 'icm', 'ircm'].includes(k))) };
+    return base + devSVG225(devList225(id, n || 1, svc, flags), x, y, w, h); }catch(e){ console.error(e); return base; } }; })(ribSVG);
+/* combat ("C") and remote-combat ("R") devices on service decorations */
+award = (function(f){ return function(k, why, opts){ const r = f.apply(this, arguments); try{ if(isOff() && !(opts && opts.v)){ const M = offE(); const id = awK(k, M.svc) || k; if(DEVCR225.includes(id) && M.aw[id]){ const d = typeof depNow === 'function' ? depNow(M) : null; const F = fldOf(M); const fk = F ? F.k : '';
+  if(d && d.op){ M.awC = Object.assign(M.awC || {}, { [id]:true }); }
+  else if(['rpa', 'cyb', 'isr', 'ew', 'io', 'msl', 'ops', 'cw'].includes(fk) && M.aw.rcecm){ M.awR = Object.assign(M.awR || {}, { [id]:true }); } } } }catch(e){ console.error(e); } return r; }; })(award);
 
 boot();
 </script>
