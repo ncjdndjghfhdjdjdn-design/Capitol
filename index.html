@@ -27563,6 +27563,19 @@ const nextTerm228 = () => { try{ const n = (G.pres && G.pres.terms228) || 1; ret
 render = (function(f){ return function(){ const r = f.apply(this, arguments); try{ const t = nextTerm228(); if(t){ const fix = el => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while((n = w.nextNode())) if(/second term/.test(n.nodeValue) && /[Rr]un for a second term|run for a second term/.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(/second term/g, t + ' term'); }; fix(document.body); } }catch(e){} return r; }; })(render);
 notify = (function(f){ return function(msg){ try{ const t = nextTerm228(); if(t && typeof msg === 'string' && /run for a second term/i.test(msg)) arguments[0] = msg.replace(/second term/g, t + ' term'); }catch(e){} return f.apply(this, arguments); }; })(notify);
 
+/* ===== v229 · Sandbox: unlimited political capital.
+   A fourth choice in the “Your political capital” row of “Edit the world”. Every action is free of political capital, the cap is lifted
+   and the meters show ∞. Other limits (money, once-a-month actions, Senate votes, the courts) still apply. ===== */
+(function(){ try{ const row = ED94.find(o => o[0] === 'pc'); if(row && !row[2].some(v => v[0] === 'inf')) row[2].push(['inf', 'Unlimited']); }catch(e){ console.error(e); } })();
+const INF229 = 999;
+const infOn229 = () => { try{ return !!(G && G.infPC229); }catch(e){ return false; } };
+const pin229 = () => { try{ if(infOn229()){ const pl = P(); if(pl) pl.pc = INF229; } }catch(e){} };
+pcMax = (function(f){ return function(){ return infOn229() ? INF229 : f.apply(this, arguments); }; })(pcMax);
+spend = (function(f){ return function(n){ if(infOn229()){ pin229(); return f.call(this, 0); } return f.apply(this, arguments); }; })(spend);
+edApply94 = (function(f){ return function(E){ const r = f.apply(this, arguments); try{ if(E && E.pc === 'inf'){ G.infPC229 = true; pin229(); notify('Custom start: unlimited political capital.', ''); } }catch(e){ console.error(e); } return r; }; })(edApply94);
+advance = (function(f){ return function(){ const r = f.apply(this, arguments); pin229(); return r; }; })(advance);
+render = (function(f){ return function(){ pin229(); const r = f.apply(this, arguments); try{ if(infOn229()) document.querySelectorAll('.tb-stats, .kpi, .pccard').forEach(el => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while((n = w.nextNode())){ if(n.nodeValue.trim() === String(INF229)) n.nodeValue = n.nodeValue.replace(String(INF229), '∞'); else if(n.nodeValue.indexOf('/ ' + INF229) >= 0) n.nodeValue = n.nodeValue.replace('/ ' + INF229, '/ ∞'); } }); }catch(e){} return r; }; })(render);
+
 boot();
 </script>
 </body></html>
