@@ -27547,6 +27547,22 @@ document.addEventListener('click', e => { if(!G || UI.screen !== 'game') return;
   else if(a === 'assess'){ const X = race227(); if(X.assess > G.turn) r = R(false, 'An assessment is already current.'); else if(!spend(1)) r = needPC(1); else { X.assess = G.turn + 12; Object.keys(X.m).forEach(id => X.m[id].est = X.m[id].p); rLog227('The intelligence community delivers a full assessment of ' + rivN227() + '’s research programs.', 'good'); r = R(true, 'Assessment delivered: exact figures for a year.'); } }
   if(r && r.msg) toast(r.msg, r.ok ? '' : 'bad'); render(); }, true);
 
+/* ===== v228 · Sandbox: no presidential term limits.
+   A new row in “Edit the world” on the new-game screen. With “No limit”, the game starts as if the Twenty-second Amendment had been
+   repealed (the same state the repeal amendment produces), so a President can run for a third, fourth or fifth term. The campaign
+   wording counts the terms. ===== */
+ED94.push(['tl', 'Presidential term limits', [[0, 'Two terms (22nd Amendment)'], [1, 'No limit']]]);
+screenSetup = (function(f){ return function(){ let h = f.apply(this, arguments); try{ const E = UI.setup && UI.setup.ed; if(E && E.tl == null) h = h.replace('class="" data-ed94="tl" data-v="0"', 'class="on" data-ed94="tl" data-v="0"'); }catch(e){} return h; }; })(screenSetup);
+/* picking the default stores nothing, so the “edited” marker stays off */
+document.addEventListener('click', e => { if(UI.screen !== 'setup') return; const b = e.target.closest && e.target.closest('[data-ed94="tl"]'); if(!b || b.dataset.v !== '0') return; const S = UI.setup; if(S && S.ed){ delete S.ed.tl; ccRender(); } }, true);
+edApply94 = (function(f){ return function(E){ const r = f.apply(this, arguments); try{ if(E && E.tl === 1){ lawEnsure().no22 = true; if(G.pres) G.pres.termLimited = false; G.noTL228 = true; notify('Custom start: there are no presidential term limits. The Twenty-second Amendment does not apply in this world.', ''); } }catch(e){ console.error(e); } return r; }; })(edApply94);
+/* count the terms a player President has won */
+applyResults = (function(f){ return function(){ const was = isPres() && G.pres && G.pres.player; const r = f.apply(this, arguments); try{ if(G.pres && G.pres.player && isPres()){ G.pres.terms228 = was ? (G.pres.terms228 || 1) + 1 : 1; } }catch(e){ console.error(e); } return r; }; })(applyResults);
+const ORD228 = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
+const nextTerm228 = () => { try{ const n = (G.pres && G.pres.terms228) || 1; return n >= 2 && G.law && G.law.no22 ? (ORD228[n] || (n + 1) + 'th') : null; }catch(e){ return null; } };
+render = (function(f){ return function(){ const r = f.apply(this, arguments); try{ const t = nextTerm228(); if(t){ const fix = el => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while((n = w.nextNode())) if(/second term/.test(n.nodeValue) && /[Rr]un for a second term|run for a second term/.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(/second term/g, t + ' term'); }; fix(document.body); } }catch(e){} return r; }; })(render);
+notify = (function(f){ return function(msg){ try{ const t = nextTerm228(); if(t && typeof msg === 'string' && /run for a second term/i.test(msg)) arguments[0] = msg.replace(/second term/g, t + ' term'); }catch(e){} return f.apply(this, arguments); }; })(notify);
+
 boot();
 </script>
 </body></html>
